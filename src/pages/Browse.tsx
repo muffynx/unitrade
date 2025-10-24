@@ -150,7 +150,7 @@ const Browse = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
       const response = await axios.get(`${API_URL}/api/product`);
 
       // ✅ แก้ไข mapping ให้รองรับ profileImage
@@ -201,7 +201,7 @@ const Browse = () => {
 
   const fetchMessages = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
       const response = await axios.get(`${API_URL}/api/messages`);
 
       const msgs = response.data.map((msg: any) => ({
