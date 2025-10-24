@@ -12,7 +12,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Browse from "./pages/Browse";
 import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact";
-import Settings from "./pages/settings";
+import Settings from "./pages/Settings";
 import ProductDetail from "./pages/ProductDetail";
 import MessageEdit from "./pages/MessageEdit";
 import Search from "./pages/Search";
@@ -93,6 +93,7 @@ function App() {
             <Route path="/admin/reports" element={<Reports />} />
             <Route path="/admin/messages" element={<MessageCenter />} />
             <Route path="/admin/MessagesAdmin" element={<MessagesAdmin />} />
+      
           </Routes>
         </LayoutWrapper>
       </BrowserRouter>
