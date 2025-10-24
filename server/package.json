@@ -28,14 +28,15 @@
     "passport-google-oauth20": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.96",
+    "@types/morgan": "^1.9.10",
     "@types/multer": "^2.0.0",
+    "@types/node": "^20.12.12",
     "@types/nodemailer": "^7.0.2",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
