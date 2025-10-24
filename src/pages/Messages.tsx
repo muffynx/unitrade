@@ -105,7 +105,7 @@ const Messages = () => {
     const fetchMessages = async () => {
         try {
             setLoading(true);
-            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
             const response = await axios.get(`${API_URL}/api/messages`);
 
             const msgs = response.data.map((msg: any) => ({
@@ -158,7 +158,7 @@ const Messages = () => {
 
         try {
             const token = localStorage.getItem("token");
-            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
             
             await axios.post(
                 `${API_URL}/api/reports`,

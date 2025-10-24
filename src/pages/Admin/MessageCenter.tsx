@@ -76,7 +76,7 @@ const useConversationStream = (conversationId: string | null, token: string | nu
       eventSourceRef.current.close();
     }
 
-    const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+    const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
     const url = new URL(`${API_URL}/api/conversations/${conversationId}/stream`);
     url.searchParams.set("token", token);
 
@@ -162,7 +162,7 @@ export default function AdminMessageCenter() {
   const [streamToken, setStreamToken] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
   const token = localStorage.getItem("adminToken");
 
   const { messages, setMessages, addMessage, clearMessages, isConnected } = useConversationStream(

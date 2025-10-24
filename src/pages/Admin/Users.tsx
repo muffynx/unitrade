@@ -90,7 +90,7 @@ export default function Users() {
 
   const token =
     localStorage.getItem("adminToken") || localStorage.getItem("token");
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
   // Toast Notification
   const showToast = (

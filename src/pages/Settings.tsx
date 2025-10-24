@@ -101,7 +101,7 @@ const Settings: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
 
   const loadTheme = () => {
     const savedTheme = localStorage.getItem('theme') || 'light';

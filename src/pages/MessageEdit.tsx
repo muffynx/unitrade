@@ -12,7 +12,7 @@ const MessageEdit = () => {
     const fetchMessage = async () => {
       try {
         const token = localStorage.getItem('token');
-        const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
         const res = await axios.get(`${API_URL}/api/messages/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -36,7 +36,7 @@ const MessageEdit = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
       await axios.put(`${API_URL}/api/messages/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });

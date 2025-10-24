@@ -49,7 +49,7 @@ const isDesktop = useMediaQuery({ minWidth: 768 });
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
         const [userRes, productRes] = await Promise.all([
           fetch(`${API_URL}/api/users/count`),
           fetch(`${API_URL}/api/products/count`),
@@ -86,7 +86,7 @@ const isDesktop = useMediaQuery({ minWidth: 768 });
     }
   
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
       setLoadingMessage('Connecting to server...');
       
       const res = await fetch(`${API_URL}/api/auth/login`, {
@@ -153,7 +153,7 @@ const isDesktop = useMediaQuery({ minWidth: 768 });
       console.log("Google User Info:", decoded.email);
   
       setLoadingMessage('Authenticating with server...');
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
       
       const res = await fetch(`${API_URL}/api/auth/google-login`, {
         method: "POST",

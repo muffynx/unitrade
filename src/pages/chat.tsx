@@ -121,7 +121,7 @@ const Chat = () => {
   const messageId = searchParams.get('messageId');
   const receiverId = searchParams.get('receiverId');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
 
   // Auto-select conversation from URL parameter
   useEffect(() => {
@@ -439,17 +439,27 @@ const Chat = () => {
   };
 
   // Complete trade
-  const handleCompleteTrade = async () => {
-    if (!selectedConversation || !selectedConversation.product?._id) {
-      toast.error('ไม่พบข้อมูลการสนทนาหรือสินค้า');
-      return;
-    }
+const handleCompleteTrade = async () => {
+  if (!selectedConversation || !selectedConversation.product?._id) {
+    toast.error('ไม่พบข้อมูลการสนทนาหรือสินค้า');
+    return;
+  }
 
-    if (String(sellerId) !== String(currentUserId)) {
-      toast.error('เฉพาะผู้ขายเท่านั้นที่สามารถทำเครื่องหมายว่าขายแล้วได้');
-      console.warn("❌ Seller mismatch:", { sellerId, currentUserId });
-      return;
-    }
+  // 🔍 Debug: ตรวจสอบค่าที่ใช้เปรียบเทียบว่าเป็นผู้ขายหรือไม่
+
+
+  // ✅ ดึงค่า sellerId ให้แน่ใจว่าเป็น string
+  const sellerId =
+    typeof selectedConversation.product.sellerId === 'object'
+      ? selectedConversation.product.sellerId._id
+      : selectedConversation.product.sellerId;
+
+  // ✅ เทียบแบบ String ป้องกัน type mismatch
+  if (String(sellerId) !== String(currentUserId)) {
+    toast.error('เฉพาะผู้ขายเท่านั้นที่สามารถทำเครื่องหมายว่าขายแล้วได้');
+    console.warn("❌ Seller mismatch:", { sellerId, currentUserId });
+    return;
+  }
 
     if (!window.confirm('คุณแน่ใจหรือไม่ว่าต้องการทำเครื่องหมายว่าสินค้านี้ขายแล้ว?')) return;
 
@@ -865,7 +875,7 @@ const Chat = () => {
     <div className="flex h-screen md:h-[85vh] lg:h-[80vh] bg-gray-50 max-w-6xl mx-auto border-0 md:border md:border-gray-200 md:rounded-xl overflow-hidden md:mt-4">
       {/* Sidebar - Conversations List */}
       <div className={`${showSidebar || !selectedConversation ? 'block' : 'hidden'} md:block w-full md:w-64 lg:w-72 border-r border-gray-200 bg-white flex flex-col absolute md:relative z-20 h-full md:h-auto`}>
-        <div className="border-b border-gray-200 p-2 sm:p-3">
+        <div className="border-b border-gray-200 p-2 sm:p-3 flex-shrink-0">
           <div className="flex items-center justify-between mb-2 sm:mb-3">
             <div className="flex items-center gap-2 sm:gap-3">
               <button
@@ -898,64 +908,99 @@ const Chat = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {conversations.map((conv) => {
-            const otherUser = getOtherParticipant(conv);
-            const hasUnread = conv.unreadCount !== undefined && conv.unreadCount !== null && conv.unreadCount > 0;
-            
-            return (
-              <button
-                key={conv._id}
-                onClick={() => handleSelectConversation(conv)}
-                className={`w-full p-2 sm:p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left ${
-                  selectedConversation?._id === conv._id ? 'bg-blue-50' : ''
-                }`}
-              >
-                <div className="flex gap-2 sm:gap-3">
-                  <div className="flex-shrink-0">
-                    {otherUser?.profilePicture ? (
-                      <img
-                        src={otherUser.profilePicture}
-                        alt={otherUser.name}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover"
-                      />
-                    ) : conv.product?.images?.[0] ? (
-                      <img
-                        src={conv.product.images[0]}
-                        alt={conv.product.title}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5 sm:mb-1">
-                      <span className="font-medium text-xs sm:text-[13px] truncate">
-                        {otherUser?.name || 'ไม่ทราบชื่อ'}
-                      </span>
-                      {hasUnread && (
-                        <span className="bg-blue-600 text-white text-[9px] sm:text-[10px] rounded-full px-1 sm:px-1.5 py-0.5 min-w-[16px] sm:min-w-[18px] text-center flex-shrink-0">
-                          {conv.unreadCount}
-                        </span>
+        {/* แก้ไขส่วนนี้ - กำหนดความสูงและ scroll ที่ชัดเจน */}
+        <div 
+          className="flex-1 overflow-y-auto"
+          style={{
+            maxHeight: 'calc(100vh - 80px)',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#d1d5db #f3f4f6'
+          }}
+        >
+          <style>
+            {`
+              .overflow-y-auto::-webkit-scrollbar {
+                width: 6px;
+              }
+              .overflow-y-auto::-webkit-scrollbar-track {
+                background: #f3f4f6;
+                border-radius: 3px;
+              }
+              .overflow-y-auto::-webkit-scrollbar-thumb {
+                background: #d1d5db;
+                border-radius: 3px;
+              }
+              .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+                background: #9ca3af;
+              }
+            `}
+          </style>
+          
+          {conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
+              <User className="h-12 w-12 mb-3 text-gray-300" />
+              <p className="text-sm text-center">ไม่มีบทสนทนา</p>
+              <p className="text-xs text-center mt-1">เริ่มการสนทนาใหม่จากหน้าสินค้า</p>
+            </div>
+          ) : (
+            conversations.map((conv) => {
+              const otherUser = getOtherParticipant(conv);
+              const hasUnread = conv.unreadCount !== undefined && conv.unreadCount !== null && conv.unreadCount > 0;
+              
+              return (
+                <button
+                  key={conv._id}
+                  onClick={() => handleSelectConversation(conv)}
+                  className={`w-full p-2 sm:p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left ${
+                    selectedConversation?._id === conv._id ? 'bg-blue-50' : ''
+                  }`}
+                >
+                  <div className="flex gap-2 sm:gap-3">
+                    <div className="flex-shrink-0">
+                      {otherUser?.profilePicture ? (
+                        <img
+                          src={otherUser.profilePicture}
+                          alt={otherUser.name}
+                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover"
+                        />
+                      ) : conv.product?.images?.[0] ? (
+                        <img
+                          src={conv.product.images[0]}
+                          alt={conv.product.title}
+                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                        </div>
                       )}
                     </div>
-                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate mb-0.5">
-                      {conv.product?.title || conv.message?.title || 'การสนทนา'}
-                      {conv.isCompleted && <span className="text-red-500 ml-1"> (สิ้นสุด)</span>}
-                    </p>
-                    {conv.lastMessage && (
-                      <p className="text-[10px] sm:text-[11px] text-gray-500 truncate">
-                        {conv.lastMessage.content}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                        <span className="font-medium text-xs sm:text-[13px] truncate">
+                          {otherUser?.name || 'ไม่ทราบชื่อ'}
+                        </span>
+                        {hasUnread && (
+                          <span className="bg-blue-600 text-white text-[9px] sm:text-[10px] rounded-full px-1 sm:px-1.5 py-0.5 min-w-[16px] sm:min-w-[18px] text-center flex-shrink-0">
+                            {conv.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] sm:text-[11px] text-gray-600 truncate mb-0.5">
+                        {conv.product?.title || conv.message?.title || 'การสนทนา'}
+                        {conv.isCompleted && <span className="text-red-500 ml-1"> (สิ้นสุด)</span>}
                       </p>
-                    )}
+                      {conv.lastMessage && (
+                        <p className="text-[10px] sm:text-[11px] text-gray-500 truncate">
+                          {conv.lastMessage.content}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
 

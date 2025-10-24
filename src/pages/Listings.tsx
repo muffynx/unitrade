@@ -100,7 +100,7 @@ const Listings = () => {
         try {
             setLoading(true);
             setError(null);
-            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
             const response = await axios.get(`${API_URL}/api/product`);
             
             const products = response.data.map((product: any) => ({

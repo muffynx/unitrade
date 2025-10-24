@@ -158,8 +158,8 @@ const getAvatarUrl = (user: { avatar?: string; profileImage?: string; name: stri
 // Component Gallery สำหรับแสดงรูปภาพ
 function Gallery({ product }: { product: Product }) {
   const [active, setActive] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [loadingBookmark, setLoadingBookmark] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
   const navigate = useNavigate();
@@ -169,11 +169,11 @@ function Gallery({ product }: { product: Product }) {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
         const response = await axios.get(`${API_URL}/api/favorites`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setIsLiked(response.data.favorites.includes(product._id));
+        setIsBookmarked(response.data.favorites.includes(product._id));
       } catch (err) {
         console.error("Fetch favorite status error:", err);
       }
@@ -181,22 +181,23 @@ function Gallery({ product }: { product: Product }) {
     fetchFavoriteStatus();
   }, [product._id]);
 
-  const handleToggleFavorite = async () => {
+  const handleToggleBookmark = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("กรุณาเข้าสู่ระบบก่อนเพิ่มรายการโปรด");
+      toast.info("กรุณาเข้าสู่ระบบก่อนบันทึกสินค้า");
       navigate("/login");
       return;
     }
 
-    setLoading(true);
+    setLoadingBookmark(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
-      if (isLiked) {
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      if (isBookmarked) {
         await axios.delete(`${API_URL}/api/favorites/${product._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setIsLiked(false);
+        setIsBookmarked(false);
+        toast.success("ลบออกจากรายการโปรดแล้ว");
       } else {
         await axios.post(
           `${API_URL}/api/favorites`,
@@ -205,18 +206,19 @@ function Gallery({ product }: { product: Product }) {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setIsLiked(true);
+        setIsBookmarked(true);
+        toast.success("เพิ่มในรายการโปรดแล้ว");
       }
     } catch (err: any) {
-      console.error("Toggle favorite error:", err);
+      console.error("Toggle bookmark error:", err);
       if (err.response?.status === 401) {
-        alert("กรุณาเข้าสู่ระบบอีกครั้ง");
+        toast.error("กรุณาเข้าสู่ระบบอีกครั้ง");
         navigate("/login");
       } else {
-        alert(err.response?.data?.message || "ไม่สามารถเพิ่ม/ลบรายการโปรดได้");
+        toast.error(err.response?.data?.message || "ไม่สามารถเพิ่ม/ลบรายการโปรดได้");
       }
     } finally {
-      setLoading(false);
+      setLoadingBookmark(false);
     }
   };
 
@@ -228,16 +230,17 @@ function Gallery({ product }: { product: Product }) {
           text: product.description,
           url: window.location.href,
         });
+        toast.success("แชร์สำเร็จ!");
       } catch (err) {
         console.error("Share error:", err);
       }
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        alert("คัดลอกลิงก์สำเร็จ!");
+        toast.success("คัดลอกลิงก์สำเร็จ!");
       } catch (err) {
         console.error("Copy error:", err);
-        alert("ไม่สามารถคัดลอกลิงก์ได้");
+        toast.error("ไม่สามารถคัดลอกลิงก์ได้");
       }
     }
   };
@@ -297,24 +300,24 @@ function Gallery({ product }: { product: Product }) {
               e.stopPropagation();
               handleShare();
             }}
-            className="rounded-full shadow p-2"
+            className="rounded-full shadow p-2 bg-white hover:bg-gray-100"
             variant="secondary"
           >
-            <Share2 className="h-4 w-4" />
+            <Share2 className="h-4 w-4 text-gray-700" />
           </Button>
 
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              handleToggleFavorite();
+              handleToggleBookmark();
             }}
-            className="rounded-full shadow p-2"
+            className="rounded-full shadow p-2 bg-white hover:bg-gray-100"
             variant="secondary"
-            disabled={loading}
+            disabled={loadingBookmark}
           >
             <Bookmark
-              className={`h-4 w-4 ${
-                isLiked ? "fill-red-500 text-red-500" : ""
+              className={`h-4 w-4 transition-colors ${
+                isBookmarked ? "fill-blue-600 text-blue-600" : "text-gray-700"
               }`}
             />
           </Button>
@@ -525,12 +528,12 @@ function SellerPanel({ product }: { product: Product }) {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
+        toast.info("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
         navigate("/login");
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
       const userResponse = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -539,7 +542,6 @@ function SellerPanel({ product }: { product: Product }) {
 
       if (currentUserId === product.user._id) {
         toast.info("ไม่สามารถแชทกับตัวเองได้");
-
         return;
       }
 
@@ -553,10 +555,10 @@ function SellerPanel({ product }: { product: Product }) {
     } catch (err: any) {
       console.error("Contact seller error:", err);
       if (err.response?.status === 401) {
-        alert("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
+        toast.error("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
         navigate("/login");
       } else {
-        alert(err.response?.data?.message || "ไม่สามารถเริ่มการสนทนาได้");
+        toast.error(err.response?.data?.message || "ไม่สามารถเริ่มการสนทนาได้");
       }
     } finally {
       setLoadingChat(false);
@@ -566,7 +568,7 @@ function SellerPanel({ product }: { product: Product }) {
   const handleReport = () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("กรุณาเข้าสู่ระบบก่อนรายงาน");
+      toast.info("กรุณาเข้าสู่ระบบก่อนรายงาน");
       navigate("/login");
       return;
     }
@@ -575,13 +577,13 @@ function SellerPanel({ product }: { product: Product }) {
 
   const submitReport = async () => {
     if (!reportReason.trim()) {
-      alert("กรุณาเลือกเหตุผลในการรายงาน");
+      toast.warning("กรุณาเลือกเหตุผลในการรายงาน");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       await axios.post(
         `${API_URL}/api/reports`,
@@ -594,12 +596,12 @@ function SellerPanel({ product }: { product: Product }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-           toast.warn("ส่งรายงานเรียบร้อยแล้ว ผู้ดูแลระบบจะตรวจสอบในเร็วๆ นี้");
+      toast.success("ส่งรายงานเรียบร้อยแล้ว ผู้ดูแลระบบจะตรวจสอบในเร็วๆ นี้");
       setShowReportModal(false);
       setReportReason("");
     } catch (err: any) {
       console.error("Report error:", err);
-      alert(err.response?.data?.message || "ไม่สามารถส่งรายงานได้");
+      toast.error(err.response?.data?.message || "ไม่สามารถส่งรายงานได้");
     }
   };
 
@@ -876,7 +878,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
         const response = await axios.get(`${API_URL}/api/product`, {
           params: {
             category: currentProduct.category,
@@ -952,12 +954,12 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
+        toast.info("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
         navigate("/login");
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       const conversationResponse = await axios.post(
         `${API_URL}/api/conversations/product/${product._id}`,
@@ -969,10 +971,10 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
     } catch (err: any) {
       console.error("Contact seller error:", err);
       if (err.response?.status === 401) {
-        alert("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
+        toast.error("กรุณาเข้าสู่ระบบก่อนเริ่มการสนทนา");
         navigate("/login");
       } else {
-        alert(err.response?.data?.message || "ไม่สามารถเริ่มการสนทนาได้");
+        toast.error(err.response?.data?.message || "ไม่สามารถเริ่มการสนทนาได้");
       }
     }
   };
@@ -1008,8 +1010,8 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
                   onError={(e) => {
                     e.currentTarget.src = "https://via.placeholder.com/400x300?text=Image+Error";
                   }}
-                  />
-                  <div className="absolute left-3 top-3">
+                />
+                <div className="absolute left-3 top-3">
                   <Badge
                     color={getCategoryColor(product.category)}
                     className="rounded-full text-xs font-medium shadow-sm"
@@ -1024,9 +1026,6 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
                       ? "กีฬา"
                       : "อื่นๆ"}
                   </Badge>
-                </div>
-                <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  
                 </div>
               </div>
 
@@ -1103,9 +1102,9 @@ export default function ProductDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const fetchProduct = async () => {
+    const fetchProduct= async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
         const response = await axios.get(`${API_URL}/api/product/${id}`);
         setProduct(response.data);
         

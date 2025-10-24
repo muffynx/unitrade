@@ -182,37 +182,39 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // VIEW TRACKING - ULTRA SIMPLIFIED & SAFE
+// ✅ แก้ไข: VIEW TRACKING - ใช้ findByIdAndUpdate และ $inc
 router.post('/:id/view', async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
     
-    // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: 'Invalid product ID' });
     }
 
-    // Find product
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    // Get IP and create unique key
     const userIp = getClientIp(req);
     const uniqueKey = `${userIp}_${productId}`;
 
-    // Check if already viewed
+    // Check if already viewed (Logic จาก Map cache ยังคงใช้ได้)
     if (hasViewed(uniqueKey)) {
+      // ดึง views ล่าสุดเพื่อตอบกลับ
+      const product = await Product.findById(productId).select('views');
       return res.status(200).json({ 
         message: 'Already viewed recently',
         counted: false,
-        views: product.views || 0
+        views: product?.views || 0
       });
     }
 
-    // Increment views
-    product.views = (product.views || 0) + 1;
-    await product.save();
+    // 💡 ใช้ findByIdAndUpdate ร่วมกับ $inc 
+    const updatedProduct = await Product.findByIdAndUpdate(
+        productId,
+        { $inc: { views: 1 } }, // เพิ่ม views 1 หน่วย
+        { new: true, select: 'views' } // คืนค่า Document ที่ถูกอัปเดต และเลือกเฉพาะ views field
+    );
+    
+    if (!updatedProduct) {
+        return res.status(404).json({ message: 'Product not found' });
+    }
     
     // Mark as viewed
     markAsViewed(uniqueKey);
@@ -220,18 +222,17 @@ router.post('/:id/view', async (req: Request, res: Response) => {
     return res.status(200).json({ 
       message: 'View counted',
       counted: true,
-      views: product.views
+      views: updatedProduct.views
     });
     
   } catch (err: any) {
     console.error('View tracking error:', err);
+    // ⚠️ ถ้ายังเกิด 500 error ที่นี่ ให้ดู error.message ใน console log ของ server
     return res.status(500).json({ 
-      message: 'Failed to track view',
-      error: err.message
+      message: 'Failed to track view (Server Error - Check Database connection or field existence)'
     });
   }
 });
-
 // Create Product
 router.post('/create', authMiddleware, upload.array('images', 10), async (req: AuthRequest, res: Response) => {
   try {

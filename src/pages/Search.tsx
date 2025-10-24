@@ -185,7 +185,7 @@ const UnifiedSearch = () => {
   const [error, setError] = useState<string | null>(null);
 
   const API_URL = useMemo(
-    () => import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com",
+    () => import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com",
     []
   );
 
