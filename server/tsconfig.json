@@ -20,9 +20,9 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"],
     "skipLibCheck": true,
-    "lib": ["ES2020"]
+    "lib": ["ES2020"],
+    "types": ["node"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
