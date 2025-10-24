@@ -48,7 +48,7 @@ export const useConversationStream = (conversationId: string | null, token: stri
       reconnectTimeoutRef.current = null;
     }
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
     
     try {
       console.log(`Connecting to conversation stream: ${conversationId}`);

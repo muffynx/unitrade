@@ -37,7 +37,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({ productId, isOpen, 
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('ไม่พบ token');
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
         const response = await axios.get(`${API_URL}/api/product/${productId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -200,7 +200,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({ productId, isOpen, 
 
       const token = localStorage.getItem('token');
       if (!token) throw new Error('ไม่พบ token');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
       await axios.put(`${API_URL}/api/product/${productId}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,

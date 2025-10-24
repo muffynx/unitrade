@@ -121,7 +121,7 @@ const Chat = () => {
   const messageId = searchParams.get('messageId');
   const receiverId = searchParams.get('receiverId');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
 
   // Auto-select conversation from URL parameter
   useEffect(() => {

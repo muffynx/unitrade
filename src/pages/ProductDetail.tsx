@@ -169,7 +169,7 @@ function Gallery({ product }: { product: Product }) {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
         const response = await axios.get(`${API_URL}/api/favorites`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -191,7 +191,7 @@ function Gallery({ product }: { product: Product }) {
 
     setLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
       if (isLiked) {
         await axios.delete(`${API_URL}/api/favorites/${product._id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -530,7 +530,7 @@ function SellerPanel({ product }: { product: Product }) {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
       const userResponse = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -581,7 +581,7 @@ function SellerPanel({ product }: { product: Product }) {
 
     try {
       const token = localStorage.getItem("token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
 
       await axios.post(
         `${API_URL}/api/reports`,
@@ -876,7 +876,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
         const response = await axios.get(`${API_URL}/api/product`, {
           params: {
             category: currentProduct.category,
@@ -957,7 +957,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
 
       const conversationResponse = await axios.post(
         `${API_URL}/api/conversations/product/${product._id}`,
@@ -1105,7 +1105,7 @@ export default function ProductDetail() {
     window.scrollTo(0, 0);
     const fetchProduct = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
         const response = await axios.get(`${API_URL}/api/product/${id}`);
         setProduct(response.data);
         

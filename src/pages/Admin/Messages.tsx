@@ -74,7 +74,7 @@ export default function AdminMessages() {
   const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
   const token = localStorage.getItem("adminToken");
 
   // Toast Notification

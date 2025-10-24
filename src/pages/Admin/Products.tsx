@@ -70,7 +70,7 @@ export default function AdminProducts() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [conditionFilter, setConditionFilter] = useState<ConditionFilter>("all");
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
   const token = localStorage.getItem("adminToken");
 
   // ✅ Custom function for error handling on user image loading

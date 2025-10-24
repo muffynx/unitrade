@@ -114,7 +114,7 @@ const ProductCreate: React.FC<ProductCreateProps> = ({ onClose, onSuccess }) => 
       // Send to backend
       const token = localStorage.getItem('token');
       if (!token) throw new Error(t('auth_error_no_token'));
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
       const response = await axios.post(`${API_URL}/api/product/create`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,

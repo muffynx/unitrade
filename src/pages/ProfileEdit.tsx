@@ -60,7 +60,7 @@ const ProfileEdit = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
 
         console.log('Fetching user data from MongoDB...');
         const userEndpoints = [
@@ -220,7 +220,7 @@ const ProfileEdit = () => {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
 
       console.log('Attempting to update profile in MongoDB...');
       const updateEndpoints = [
@@ -327,7 +327,7 @@ const ProfileEdit = () => {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade2.onrender.com';
 
       console.log('Attempting to change password...');
       const passwordEndpoints = [

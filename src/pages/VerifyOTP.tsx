@@ -91,7 +91,7 @@ const VerifyOTP = () => {
     setLoadingMessage("Verifying OTP...");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
       
       const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
         method: "POST",
@@ -143,7 +143,7 @@ const VerifyOTP = () => {
     setLoadingMessage("Sending new OTP...");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade2.onrender.com";
       
       const res = await fetch(`${API_URL}/api/auth/resend-otp`, {
         method: "POST",
