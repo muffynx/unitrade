@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    // Output Configuration
+    "rootDir": ".",
+    "outDir": "./dist",
+
+    // Module Settings
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // Type Checking
+    "strict": false,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    // ปิดการตรวจสอบ implicit returns
+    "noImplicitReturns": false,
+
+    // Source Maps
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Additional Strictness
+    "noUnusedLocals": false,  // ปิดการตรวจสอบตัวแปรที่ไม่ได้ใช้
+    "noUnusedParameters": false,  // ปิดการตรวจสอบพารามิเตอร์ที่ไม่ได้ใช้
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Node.js Types
+    "types": ["node"],
+
+    // Other Recommended Options
+    "skipLibCheck": true,
+    "lib": ["ES2020"]
+  },
+  "include": [
+    "**/*.ts"
+, "routes/users.ts"  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
