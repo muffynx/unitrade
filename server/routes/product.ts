@@ -186,51 +186,23 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/:id/view', async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
-    
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ message: 'Invalid product ID' });
-    }
+    const userKey = req.ip || 'unknown_ip';
+    const uniqueKey = `${userKey}_${productId}`;
 
-    const userIp = getClientIp(req);
-    const uniqueKey = `${userIp}_${productId}`;
-
-    // Check if already viewed (Logic จาก Map cache ยังคงใช้ได้)
     if (hasViewed(uniqueKey)) {
-      // ดึง views ล่าสุดเพื่อตอบกลับ
-      const product = await Product.findById(productId).select('views');
-      return res.status(200).json({ 
-        message: 'Already viewed recently',
-        counted: false,
-        views: product?.views || 0
-      });
+      return res.status(200).json({ message: 'Already viewed recently (no increment)' });
     }
 
-    // 💡 ใช้ findByIdAndUpdate ร่วมกับ $inc 
-    const updatedProduct = await Product.findByIdAndUpdate(
-        productId,
-        { $inc: { views: 1 } }, // เพิ่ม views 1 หน่วย
-        { new: true, select: 'views' } // คืนค่า Document ที่ถูกอัปเดต และเลือกเฉพาะ views field
-    );
-    
-    if (!updatedProduct) {
-        return res.status(404).json({ message: 'Product not found' });
-    }
-    
-    // Mark as viewed
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    product.views = (product.views || 0) + 1;
+    await product.save();
     markAsViewed(uniqueKey);
-    
-    return res.status(200).json({ 
-      message: 'View counted',
-      counted: true,
-      views: updatedProduct.views
-    });
-    
+    res.status(200).json({ message: 'View incremented' });
   } catch (err: any) {
-    console.error('View tracking error:', err);
-    // ⚠️ ถ้ายังเกิด 500 error ที่นี่ ให้ดู error.message ใน console log ของ server
-    return res.status(500).json({ 
-      message: 'Failed to track view (Server Error - Check Database connection or field existence)'
-    });
+    console.error('Increment view error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
   }
 });
 // Create Product

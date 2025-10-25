@@ -182,7 +182,7 @@ let reviewsData: Review[] = [];
 useEffect(() => {
 
   if (Array.isArray(reviews) && reviews.length > 0) {
-    console.log("First review:", reviews[0]);
+
   }
 }, [reviews]);
 
