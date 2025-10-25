@@ -1150,29 +1150,24 @@ export default function ProductDetail() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    const fetchProduct= async () => {
-      try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
-        const response = await axios.get(`${API_URL}/api/product/${id}`);
-        setProduct(response.data);
-        
-        // ✅ บันทึกยอดเข้าชม
-        try {
-          await axios.post(`${API_URL}/api/products/${id}/view`);
-        } catch (viewErr) {
-          console.error("View tracking error:", viewErr);
-          // ไม่ต้อง throw error เพราะไม่สำคัญมาก
-        }
-        
-        setLoading(false);
-      } catch (err: any) {
+  window.scrollTo(0, 0);
+  const fetchProduct = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const response = await axios.get(`${API_URL}/api/product/${id}`);
+      
+      
+      await axios.post(`${API_URL}/api/product/${id}/view`);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "ไม่สามารถดึงข้อมูลสินค้าได้");
+      console.error("Fetch product error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  if (id) fetchProduct();
+}, [id]);
 
-        setLoading(false);
-      }
-    };
-    if (id) fetchProduct();
-  }, [id]);
 
   if (loading) {
     return (
