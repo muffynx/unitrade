@@ -228,8 +228,8 @@ router.put('/profile/image', authenticateToken, (req: any, res: any) => {
                 return res.status(400).json({ message: 'กรุณาเลือกไฟล์รูปภาพ' });
             }
 
-            const user = await User.findById(req.user._id) as IUser | null;
-            if (!user) {
+const user = await User.findById(req.user._id);            
+if (!user) {
                 // Clean up the newly uploaded file if user is not found
                 fs.unlinkSync(req.file.path); 
                 return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
@@ -252,7 +252,7 @@ router.put('/profile/image', authenticateToken, (req: any, res: any) => {
             user.profileImage = imagePath;
             await user.save();
 
-            const updatedUser = await fetchAndFormatUser(req.user._id);
+      const updatedUser = await User.findById(req.user._id).select("-password");
             
             res.json({ 
                 message: 'อัปเดตรูปโปรไฟล์สำเร็จ', 
