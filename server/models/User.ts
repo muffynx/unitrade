@@ -14,7 +14,9 @@ export interface IUser extends Document {
   profileImage?: string;
   isEmailVerified?: boolean;
   status: string;
-  lastLogin?: Date; // Add this line
+  lastLogin?: Date;
+  averageRating: number; // ✅ เพิ่ม
+  reviewCount: number; // ✅ เพิ่ม
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -82,7 +84,9 @@ const userSchema = new Schema<IUser>({
   lastLogin: {  // Add this field
     type: Date,
     default: null
-  }
+  },
+  averageRating: { type: Number, default: 0 }, 
+  reviewCount: { type: Number, default: 0 }, 
 }, {
   timestamps: true
 });

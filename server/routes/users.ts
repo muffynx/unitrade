@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User';
 import Product from '../models/Product';
 import Message from '../models/Message';
-
+import Review from '../models/Review'; // ✅ เพิ่มการ import
 dotenv.config();
 const router = express.Router();
 
@@ -391,7 +391,21 @@ router.get('/:id', async (req: any, res: any) => {
       .sort({ createdAt: -1 })
       .limit(20);
       
-    res.json({ user, products, messages });
+    const reviews = await Review.find({ recipientId: req.params.id })
+      .populate("reviewerId", "name profileImage")
+      .populate("productId", "title images")
+      .sort({ createdAt: -1 });
+
+    res.json({ 
+      user: {
+        ...user.toJSON(),
+        averageRating: user.averageRating || 0,
+        reviewCount: user.reviewCount || 0
+      }, 
+      products, 
+      messages,
+      reviews 
+    });
   } catch (error) {
     console.error('Get user by ID error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดของเซิร์ฟเวอร์' });

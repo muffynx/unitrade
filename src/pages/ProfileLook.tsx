@@ -1,23 +1,8 @@
+// src/pages/ProfileLook.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Package,
-  MessageCircle,
-  Eye,
-  Heart,
-  Share2,
-  Flag,
-  TrendingUp,
-  AlertCircle,
-  X,
-  Filter,
-  ChevronDown,
+  ArrowLeft, User, Mail, Phone, MapPin, Calendar, Package, MessageCircle, Eye, Heart, Share2, Flag, TrendingUp, AlertCircle, X, Filter, ChevronDown, Star
 } from "lucide-react";
 import axios from "axios";
 import { formatDistanceToNow } from "date-fns";
@@ -31,6 +16,8 @@ interface UserProfile {
   phone?: string;
   university?: string;
   createdAt?: string;
+  averageRating: number; // ✅ เพิ่ม
+  reviewCount: number; // ✅ เพิ่ม
 }
 
 interface Product {
@@ -53,6 +40,25 @@ interface MessageItem {
   comments: any[];
   views: number;
   createdAt?: string;
+}
+
+interface Review {
+  _id: string;
+  tradeId: string;
+  productId: {
+    _id: string;
+    title: string;
+    images: string[];
+  };
+  reviewerId: {
+    _id: string;
+    name: string;
+    profileImage?: string;
+  };
+  recipientId: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
 }
 
 const formatTime = (dateString?: string) => {
@@ -83,7 +89,8 @@ const ProfileLook: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [messages, setMessages] = useState<MessageItem[]>([]);
-  const [activeTab, setActiveTab] = useState<"products" | "messages">("products");
+  const [reviews, setReviews] = useState<Review[]>([]); // ✅ เพิ่ม
+  const [activeTab, setActiveTab] = useState<"products" | "messages" | "reviews">("products"); // ✅ เพิ่ม reviews
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"latest" | "oldest" | "popular" | "price-low" | "price-high">("latest");
@@ -93,7 +100,7 @@ const ProfileLook: React.FC = () => {
   const [reportReason, setReportReason] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,9 +109,15 @@ const ProfileLook: React.FC = () => {
         setLoading(true);
         setError(null);
         const res = await axios.get(`${API_URL}/api/users/${id}`);
+        console.log('API Response (Reviews):', res.data.reviews); // ✅ Debug
+        console.log('Calling API:', `${API_URL}/api/users/${id}`); // ✅ Debug URL
+
+      console.log('Full API Response:', res.data); // ✅ Debug response เต็ม
+      console.log('API Response (Reviews):', res.data.reviews); // ✅ Debug reviews
         setProfile(res.data.user);
         setProducts(res.data.products || []);
         setMessages(res.data.messages || []);
+        setReviews(res.data.reviews || []); // ✅ เพิ่ม
       } catch (err: any) {
         console.error("Fetch profile look error:", err);
         setError(err.response?.data?.message || "ไม่สามารถโหลดข้อมูลได้");
@@ -177,6 +190,11 @@ const ProfileLook: React.FC = () => {
     }
   };
 
+const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+
+  
+
   const handleShareProfile = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopiedLink(true);
@@ -229,7 +247,7 @@ const ProfileLook: React.FC = () => {
     products.reduce((sum, p) => sum + p.favorites.length, 0) +
     messages.reduce((sum, m) => sum + m.likes.length, 0);
 
-  if (loading) {
+    if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="animate-pulse space-y-6">
@@ -307,9 +325,19 @@ const ProfileLook: React.FC = () => {
               />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {profile.name}
-              </h1>
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {profile.name}
+                </h1>
+                {profile.averageRating > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Star size={16} className="text-yellow-400 fill-current" />
+                    <span className="text-sm text-gray-600">
+                      {profile.averageRating.toFixed(1)} ({profile.reviewCount})
+                    </span>
+                  </div>
+                )}
+              </div>
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <Mail size={16} className="text-gray-400" />
@@ -340,7 +368,7 @@ const ProfileLook: React.FC = () => {
               </div>
             </div>
             
-            {/* Action Buttons - Moved to the right */}
+            {/* Action Buttons */}
             <div className="flex gap-2">
               <div className="relative">
                 <button
@@ -371,86 +399,8 @@ const ProfileLook: React.FC = () => {
             </div>
           </div>
 
-          {/* Report Modal */}
-          {showReportModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl w-full max-w-md">
-                <div className="border-b border-gray-200 p-6 flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    รายงานโปรไฟล์ที่ไม่เหมาะสม
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setShowReportModal(false);
-                      setReportReason("");
-                    }}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X size={20} className="text-gray-600" />
-                  </button>
-                </div>
-                <div className="p-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        เหตุผลในการรายงาน{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={reportReason}
-                        onChange={(e) => setReportReason(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      >
-                        <option value="">เลือกเหตุผล</option>
-                        <option value="inappropriate_content">
-                          เนื้อหาไม่เหมาะสม
-                        </option>
-                        <option value="spam">สแปม</option>
-                        <option value="fake_information">ข้อมูลปลอม</option>
-                        <option value="scam">พยายามหลอกลวง</option>
-                        <option value="harassment">การกลั่นแกล้ง</option>
-                        <option value="other">อื่นๆ</option>
-                      </select>
-                    </div>
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <div className="flex gap-2">
-                        <AlertCircle
-                          size={16}
-                          className="text-yellow-600 flex-shrink-0 mt-0.5"
-                        />
-                        <p className="text-xs text-yellow-800">
-                          การรายงานจะถูกส่งไปยังผู้ดูแลระบบเพื่อตรวจสอบ
-                          กรุณารายงานเฉพาะกรณีที่มีเนื้อหาไม่เหมาะสมจริงๆ
-                          เท่านั้น
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2">
-                      <button
-                        onClick={() => {
-                          setShowReportModal(false);
-                          setReportReason("");
-                        }}
-                        className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        ยกเลิก
-                      </button>
-                      <button
-                        onClick={submitReport}
-                        disabled={!reportReason.trim()}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                      >
-                        ส่งรายงาน
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Statistics */}
-          <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
+          <div className="grid grid-cols-4 gap-4 pt-6 border-t border-gray-200">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
                 <Package size={16} />
@@ -471,6 +421,13 @@ const ProfileLook: React.FC = () => {
                 <span className="text-xs">ความสนใจ</span>
               </div>
               <p className="text-2xl font-bold text-gray-900">{totalLikes.toLocaleString()}</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+                <Star size={16} />
+                <span className="text-xs">รีวิว</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{profile.reviewCount || 0}</p>
             </div>
           </div>
         </div>
@@ -504,11 +461,23 @@ const ProfileLook: React.FC = () => {
                 <MessageCircle size={16} /> ข้อความ ({messages.length})
               </div>
             </button>
+            <button
+              onClick={() => setActiveTab("reviews")}
+              className={`flex-1 px-6 py-4 text-sm font-medium ${
+                activeTab === "reviews"
+                  ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Star size={16} /> รีวิว ({reviews.length})
+              </div>
+            </button>
           </div>
         </div>
 
         {/* Sort Menu */}
-        {(products.length > 0 || messages.length > 0) && (
+        {(products.length > 0 || messages.length > 0 || reviews.length > 0) && (
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -548,17 +517,17 @@ const ProfileLook: React.FC = () => {
                     >
                       เก่าสุด
                     </button>
-                    <button
-                      onClick={() => {
-                        setSortBy("popular");
-                        setShowSortMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                    >
-                      ยอดนิยม
-                    </button>
                     {activeTab === "products" && (
                       <>
+                        <button
+                          onClick={() => {
+                            setSortBy("popular");
+                            setShowSortMenu(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                        >
+                          ยอดนิยม
+                        </button>
                         <button
                           onClick={() => {
                             setSortBy("price-low");
@@ -650,7 +619,7 @@ const ProfileLook: React.FC = () => {
                 </div>
               )}
             </div>
-          ) : (
+          ) : activeTab === "messages" ? (
             <div>
               {messages.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
@@ -706,9 +675,160 @@ const ProfileLook: React.FC = () => {
                 </div>
               )}
             </div>
+          ) : (
+<div className="space-y-4">
+  {reviews && reviews.length > 0 ? (
+    getSortedReviews().map((review) => (
+      <div
+        key={review._id}
+        className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+      >
+        <div className="flex items-start gap-3">
+          {/* Reviewer Image */}
+          <div className="flex-shrink-0">
+            {review.reviewerId.profileImage ? (
+              <img
+                src={review.reviewerId.profileImage}
+                alt={review.reviewerId.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <User size={20} className="text-blue-600" />
+              </div>
+            )}
+          </div>
+
+          {/* Review Content */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              {/* Reviewer Name */}
+              <p className="font-medium text-sm">{review.reviewerId.name}</p>
+              
+              {/* Star Rating */}
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={16}
+                    className={`${
+                      star <= review.rating
+                        ? 'text-yellow-400 fill-current'
+                        : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Review Date */}
+            <p className="text-xs text-gray-500 mt-1">{formatTime(review.createdAt)}</p>
+
+            {/* Comment Box */}
+            <p className="text-sm text-gray-700 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 break-words">
+              {review.comment || "ไม่มีความคิดเห็น"}
+            </p>
+
+            {/* Product Name */}
+            <p className="text-xs text-gray-500 mt-2">
+              สินค้า: <span className="font-medium">{review.productId.title}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    ))
+  ) : (
+    <div className="text-center py-12 text-gray-500">
+      <Star size={48} className="mx-auto mb-4 text-gray-300" />
+      <p className="text-lg font-medium">ยังไม่มีรีวิว</p>
+      <p className="text-sm">ผู้ใช้คนนี้ยังไม่ได้รับรีวิวใดๆ</p>
+    </div>
+  )}
+</div>
+
+
+
           )}
         </div>
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md">
+            <div className="border-b border-gray-200 p-6 flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-gray-900">
+                รายงานโปรไฟล์ที่ไม่เหมาะสม
+              </h3>
+              <button
+                onClick={() => {
+                  setShowReportModal(false);
+                  setReportReason("");
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X size={20} className="text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    เหตุผลในการรายงาน{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="">เลือกเหตุผล</option>
+                    <option value="inappropriate_content">
+                      เนื้อหาไม่เหมาะสม
+                    </option>
+                    <option value="spam">สแปม</option>
+                    <option value="fake_information">ข้อมูลปลอม</option>
+                    <option value="scam">พยายามหลอกลวง</option>
+                    <option value="harassment">การกลั่นแกล้ง</option>
+                    <option value="other">อื่นๆ</option>
+                  </select>
+                </div>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex gap-2">
+                    <AlertCircle
+                      size={16}
+                      className="text-yellow-600 flex-shrink-0 mt-0.5"
+                    />
+                    <p className="text-xs text-yellow-800">
+                      การรายงานจะถูกส่งไปยังผู้ดูแลระบบเพื่อตรวจสอบ
+                      กรุณารายงานเฉพาะกรณีที่มีเนื้อหาไม่เหมาะสมจริงๆ
+                      เท่านั้น
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      setShowReportModal(false);
+                      setReportReason("");
+                    }}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    onClick={submitReport}
+                    disabled={!reportReason.trim()}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ส่งรายงาน
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

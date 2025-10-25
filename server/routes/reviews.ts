@@ -1,8 +1,10 @@
+// server/routes/reviews.ts
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import Review from "../models/Review";
 import Conversation from "../models/Conversation";
 import Notification from "../models/Notification";
+import User from "../models/User"; // ✅ เพิ่ม
 import auth from "../middleware/auth";
 
 const router = express.Router();
@@ -55,6 +57,16 @@ router.post("/", auth, async (req: AuthRequest, res: Response) => {
     });
     await review.save();
 
+    // ✅ อัปเดต averageRating และ reviewCount ใน User
+    const reviews = await Review.find({ recipientId });
+    const reviewCount = reviews.length;
+    const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount || 0;
+
+    await User.findByIdAndUpdate(recipientId, {
+      averageRating: parseFloat(averageRating.toFixed(2)),
+      reviewCount,
+    });
+
     // สร้าง Notification สำหรับผู้รับรีวิว
     const notification = new Notification({
       userId: recipientId,
@@ -63,6 +75,8 @@ router.post("/", auth, async (req: AuthRequest, res: Response) => {
       type: "success",
       sentBy: reviewerId,
       status: "sent",
+      conversationId: tradeId, // ✅ เพิ่ม
+      productId, // ✅ เพิ่ม
     });
     await notification.save();
 
@@ -86,9 +100,39 @@ router.get("/user/:userId", async (req: Request, res: Response) => {
       .populate("productId", "title images")
       .sort({ createdAt: -1 });
 
-    res.json(reviews);
+    const reviewCount = reviews.length;
+    const averageRating = reviews.length > 0 
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
+      : 0;
+
+    res.json({ reviews, averageRating: parseFloat(averageRating.toFixed(2)), reviewCount });
   } catch (error: any) {
     console.error("Fetch reviews error:", error);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงรีวิว" });
+  }
+});
+
+// ✅ เพิ่ม Endpoint: ดึงรีวิวของสินค้า
+router.get("/product/:productId", async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
+
+    const reviews = await Review.find({ productId })
+      .populate("reviewerId", "name profileImage")
+      .populate("productId", "title images")
+      .sort({ createdAt: -1 });
+
+    const reviewCount = reviews.length;
+    const averageRating = reviews.length > 0 
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
+      : 0;
+
+    res.json({ reviews, averageRating: parseFloat(averageRating.toFixed(2)), reviewCount });
+  } catch (error: any) {
+    console.error("Fetch product reviews error:", error);
     res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงรีวิว" });
   }
 });

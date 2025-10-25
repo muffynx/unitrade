@@ -348,12 +348,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isProductCreateModalOpen, setIsProductCreateModalOpen] = useState(false);
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [reviewCount, setReviewCount] = useState<number>(0);
 
   const fetchUserListings = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await axios.get(`${API_URL}/api/product?userId=current`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -367,7 +369,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const favoritesResponse = await axios.get(`${API_URL}/api/favorites`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -384,10 +386,38 @@ export default function Dashboard() {
     }
   };
 
+  const fetchUserReviews = async (userId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await axios.get(`${API_URL}/api/reviews/user/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('User Reviews API Response:', response.data); // ✅ Debug
+      setAverageRating(response.data.averageRating || 0);
+      setReviewCount(response.data.reviewCount || 0);
+    } catch (err: any) {
+      console.error("Fetch user reviews error:", err);
+      setError(err.response?.data?.message || 'ไม่สามารถดึงข้อมูลรีวิวได้');
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchUserListings(), fetchFavorites()]);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const userResponse = await axios.get(`${API_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const userId = userResponse.data._id;
+        await Promise.all([fetchUserListings(), fetchFavorites(), fetchUserReviews(userId)]);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'ไม่สามารถดึงข้อมูลได้');
+      }
       setLoading(false);
     };
     fetchData();
@@ -413,7 +443,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       await axios.delete(`${API_URL}/api/product/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -428,7 +458,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       await axios.delete(`${API_URL}/api/favorites/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -470,7 +500,6 @@ export default function Dashboard() {
 
   const totalViews = listings.reduce((sum, p) => sum + p.views, 0);
   const totalFavorites = favorites.length;
-
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 font-sarabun">
@@ -578,7 +607,9 @@ export default function Dashboard() {
               </div>
               <div className="flex justify-between items-center">
                 <span>คะแนน</span>
-                <span className="font-medium">4.8</span>
+                <span className="font-medium">
+                  {averageRating > 0 ? averageRating.toFixed(1) : "ไม่มีคะแนน"} ({reviewCount})
+                </span>
               </div>
             </div>
           </CardContent>
