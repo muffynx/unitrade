@@ -127,44 +127,45 @@ try {
       const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`, config);
 
       // --- START: แก้ไขส่วนนี้ ---
-      let reviewsData: Review[] = [];
-      let averageRating = 0;
-      let reviewCount = 0;
-
-      // กรณีที่ API ส่ง Array มาตรงๆ (ตามตัวอย่าง JSON ที่ให้มา)
+let reviewsData: Review[] = [];
+      let responseAverageRating = 0; 
+      let responseReviewCount = 0; 
+      
+      // จัดการการดึงข้อมูลรีวิว
       if (Array.isArray(reviewRes.data)) {
         reviewsData = reviewRes.data;
-      // กรณีที่ API ส่ง Object ที่มี key 'reviews' (ตามที่ code เดิมพยายามทำ)
       } else if (reviewRes.data && Array.isArray(reviewRes.data.reviews)) {
         reviewsData = reviewRes.data.reviews;
-        averageRating = reviewRes.data.averageRating;
-        reviewCount = reviewRes.data.reviewCount;
-      // กรณีที่ API ส่ง object มาหนึ่งอัน (ตามที่ code เดิมพยายามทำ)
+        responseAverageRating = reviewRes.data.averageRating;
+        responseReviewCount = reviewRes.data.reviewCount;
       } else if (reviewRes.data.reviews) {
-         // This block handles the case where 'reviews' is a single object, 
-         // which is unlikely for a list endpoint but kept for safety based on the original code
          reviewsData = [reviewRes.data.reviews]; 
-         averageRating = reviewRes.data.averageRating;
-         reviewCount = reviewRes.data.reviewCount;
+         responseAverageRating = reviewRes.data.averageRating;
+         responseReviewCount = reviewRes.data.reviewCount;
       }
 
-      setReviews(reviewsData);
+      // **✅ เพิ่ม: กรองรีวิวที่สินค้าถูกลบ (productId เป็น null หรือไม่มี _id)**
+      const filteredReviewsData = reviewsData.filter(
+        (review) => review.productId && review.productId._id
+      );
 
-      const calculatedReviewCount = reviewsData.length;
+      setReviews(filteredReviewsData); // ใช้ข้อมูลที่ถูกกรอง
+
+      // 4. คำนวณค่าเฉลี่ยและจำนวนรีวิวใหม่จากข้อมูลที่กรองแล้ว
+      const calculatedReviewCount = filteredReviewsData.length;
       let calculatedAverageRating = 0;
       if (calculatedReviewCount > 0) {
-          const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
+          const totalRating = filteredReviewsData.reduce((sum, review) => sum + review.rating, 0);
           calculatedAverageRating = totalRating / calculatedReviewCount;
       }
 
       // อัปเดต profile ด้วยค่า rating
-setProfile((prev) =>
+      setProfile((prev) =>
         prev
           ? {
               ...prev,
-              // ใช้ค่าที่คำนวณได้เป็นหลัก
-              averageRating: calculatedAverageRating,
-              reviewCount: calculatedReviewCount,
+              averageRating: responseAverageRating || calculatedAverageRating || prev.averageRating,
+              reviewCount: responseReviewCount || calculatedReviewCount || prev.reviewCount,
             }
           : prev
       );
