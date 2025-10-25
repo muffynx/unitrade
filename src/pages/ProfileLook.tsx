@@ -695,15 +695,15 @@ const ProfileLook: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {reviews && reviews.length > 0 ? (
+             {reviews && reviews.length > 0 ? (
   getSortedReviews().map((review) => (
     <div key={review._id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
-          {review.reviewerId.profileImage ? (
+          {review.reviewerId?.profileImage ? (
             <img
               src={review.reviewerId.profileImage}
-              alt={review.reviewerId.name}
+              alt={review.reviewerId.name || "Unknown"}
               className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
@@ -714,13 +714,13 @@ const ProfileLook: React.FC = () => {
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="font-medium text-sm">{review.reviewerId.name}</p>
+            <p className="font-medium text-sm">{review.reviewerId?.name || "Unknown"}</p>
             <div className="flex">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   size={16}
-                  className={`${star <= review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                  className={`${star <= (review.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                 />
               ))}
             </div>
@@ -730,7 +730,7 @@ const ProfileLook: React.FC = () => {
             {review.comment || "ไม่มีความคิดเห็น"}
           </p>
           <p className="text-xs text-gray-500 mt-2">
-            สินค้า: <span className="font-medium">{review.productId.title}</span>
+            สินค้า: <span className="font-medium">{review.productId?.title || "Unknown"}</span>
           </p>
         </div>
       </div>
