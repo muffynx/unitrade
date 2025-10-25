@@ -38,8 +38,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
-  "https://unitrade-rho.vercel.app", // ⬅️ URL Frontend ของคุณ
-  // "https://unitrade3.onrender.com", // ⬅️ นี่คือ URL Backend เอง ปกติไม่จำเป็นต้องใส่
+  "https://unitrade-rho.vercel.app",
 ];
 
 app.use(

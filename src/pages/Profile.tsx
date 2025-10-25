@@ -108,7 +108,8 @@ const Profile = () => {
       setError(null);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("ไม่พบ token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       const response = await axios.get(`${API_URL}/api/product`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -167,7 +168,8 @@ const Profile = () => {
       setError(null);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("ไม่พบ token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       const response = await axios.get(`${API_URL}/api/product`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -221,7 +223,8 @@ const Profile = () => {
       setFavoritesLoading(true);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("ไม่พบ token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       const favoritesResponse = await axios.get(`${API_URL}/api/favorites`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -283,7 +286,8 @@ const Profile = () => {
       setMessageLoading(true);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("ไม่พบ token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       const response = await axios.get(`${API_URL}/api/messages`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -330,7 +334,8 @@ const Profile = () => {
         alert("กรุณาเข้าสู่ระบบ");
         return;
       }
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       await axios.patch(
         `${API_URL}/api/product/${listingId}`,
@@ -372,7 +377,8 @@ const Profile = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const API_URL =
+          import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
         let userData: any = null;
         const userEndpoints = [
@@ -486,7 +492,8 @@ const Profile = () => {
     try {
       setError(null);
       const token = localStorage.getItem("token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       const deleteEndpoints = [
         `/api/products/${listingId}`,
@@ -553,7 +560,8 @@ const Profile = () => {
     if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบออกจากรายการโปรด?")) return;
     try {
       const token = localStorage.getItem("token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       await axios.delete(`${API_URL}/api/favorites/${listingId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -577,7 +585,8 @@ const Profile = () => {
     if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบข้อความนี้?")) return;
     try {
       const token = localStorage.getItem("token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
       await axios.delete(`${API_URL}/api/messages/${messageId}`, {
         headers: { Authorization: `Bearer ${token}` },
