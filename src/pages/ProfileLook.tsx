@@ -126,9 +126,20 @@ const ProfileLook: React.FC = () => {
         const token = localStorage.getItem("token");
         const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`, config);
+        
         console.log('Review API Response:', reviewRes.data); // ✅ Debug reviews response
         setReviews(reviewRes.data.reviews || []);
         // Optionally update profile with averageRating and reviewCount from review endpoint
+
+        useEffect(() => {
+  console.log('Reviews state:', reviews);
+  console.log('Is array?', Array.isArray(reviews));
+  console.log('Length:', reviews?.length);
+}, [reviews]);
+useEffect(() => {
+  console.log('Sorted Reviews:', getSortedReviews());
+}, [reviews]);
+
         setProfile((prev) => prev ? {
           ...prev,
           averageRating: reviewRes.data.averageRating || prev.averageRating,
