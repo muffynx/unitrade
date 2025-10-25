@@ -394,7 +394,7 @@ export default function Dashboard() {
       const response = await axios.get(`${API_URL}/api/reviews/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('User Reviews API Response:', response.data); // ✅ Debug
+  
       setAverageRating(response.data.averageRating || 0);
       setReviewCount(response.data.reviewCount || 0);
     } catch (err: any) {

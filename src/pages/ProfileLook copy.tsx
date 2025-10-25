@@ -109,11 +109,11 @@ const ProfileLook: React.FC = () => {
         setLoading(true);
         setError(null);
         const res = await axios.get(`${API_URL}/api/users/${id}`);
-        console.log('API Response (Reviews):', res.data.reviews); // ✅ Debug
-        console.log('Calling API:', `${API_URL}/api/users/${id}`); // ✅ Debug URL
+      
+   
 
-      console.log('Full API Response:', res.data); // ✅ Debug response เต็ม
-      console.log('API Response (Reviews):', res.data.reviews); // ✅ Debug reviews
+   
+     
         setProfile(res.data.user);
         setProducts(res.data.products || []);
         setMessages(res.data.messages || []);

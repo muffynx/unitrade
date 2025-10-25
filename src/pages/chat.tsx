@@ -128,7 +128,7 @@ const Chat = () => {
     if (urlConversationId && conversations.length > 0) {
       const conversation = conversations.find(conv => conv._id === urlConversationId);
       if (conversation && selectedConversation?._id !== conversation._id) {
-        console.log('🔄 Selecting conversation from URL:', conversation._id);
+     
         setSelectedConversation(conversation);
         fetchMessages(conversation._id);
         // Hide sidebar on mobile when conversation is selected
@@ -143,7 +143,7 @@ const Chat = () => {
   const handleSelectConversation = (conversation: Conversation) => {
     if (selectedConversation?._id === conversation._id) return;
     
-    console.log('🎯 Selecting conversation:', conversation._id);
+
     navigate(`/chat/${conversation._id}`, { replace: true });
     setSelectedConversation(conversation);
     fetchMessages(conversation._id);
@@ -563,7 +563,7 @@ const handleCompleteTrade = async () => {
         comment: reviewComment,
       };
 
-      console.log('Submitting review:', reviewData);
+   
       await axios.post(
         `${API_URL}/api/reviews`,
         reviewData,

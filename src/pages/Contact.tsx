@@ -33,7 +33,7 @@ const Contact = () => {
     setSubmitMessage(null); // Clear previous messages
 
     // --- จำลองการส่งข้อมูลไปยัง API (แทนการใช้ alert) ---
-    console.log('Submitting data:', formData);
+ 
 
     setTimeout(() => {
       setIsSubmitting(false);

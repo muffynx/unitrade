@@ -156,7 +156,7 @@ const Browse = () => {
       // ✅ แก้ไข mapping ให้รองรับ profileImage
       const products = response.data.map((product: any) => {
         // 🔍 Debug: ดูข้อมูล user ที่ได้รับ
-        console.log("Product user data:", product.user);
+
 
         return {
           id: product._id,
@@ -189,7 +189,7 @@ const Browse = () => {
         };
       });
 
-      console.log("Mapped products:", products[0]); // 🔍 Debug first product
+   
       setListings(products);
     } catch (err: any) {
       setError(err.message || t("fetch_listings_error"));
