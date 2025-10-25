@@ -120,6 +120,8 @@ const ProfileLook: React.FC = () => {
 
 
       const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`);
+console.log("Calling Review API:", `${API_URL}/api/reviews/user/${id}`);
+console.log("Review Response:", reviewRes.data);
 
         setReviews(reviewRes.data.reviews);
       } catch (err: any) {
