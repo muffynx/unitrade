@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User';
 import Product from '../models/Product';
 import Message from '../models/Message';
-import Review from '../models/Review'; // ✅ เพิ่มการ import
+
 dotenv.config();
 const router = express.Router();
 
@@ -117,11 +117,6 @@ router.get('/profile', authenticateToken, async (req: any, res: any) => {
 
 // Update profile
 router.put('/profile', authenticateToken, async (req: any, res: any) => {
-  console.log('Profile update request:', {
-    userId: req.user._id,
-    body: req.body
-  });
-
   try {
     const { name, username, email, phone, university, studentId } = req.body;
     
@@ -194,7 +189,6 @@ router.put('/profile', authenticateToken, async (req: any, res: any) => {
       return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
     }
 
-    console.log('Profile updated successfully:', updatedUser);
     res.json({ message: 'อัปเดตโปรไฟล์สำเร็จ', user: updatedUser });
   } catch (error: any) {
     console.error('Update profile error:', error);
@@ -211,53 +205,71 @@ router.put('/profile', authenticateToken, async (req: any, res: any) => {
 });
 
 // Upload profile image
-router.put('/profile/image', authenticateToken, upload.single('profileImage'), async (req: any, res: any) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'กรุณาเลือกไฟล์รูปภาพ' });
-    }
+router.put('/profile/image', authenticateToken, (req: any, res: any) => {
+    // Use Multer middleware
+    upload.single('profileImage')(req, res, async (err: any) => {
+        try {
+            // Handle Multer errors (e.g., file size limit, invalid file type)
+            if (err instanceof multer.MulterError) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({ message: `ขนาดไฟล์รูปภาพต้องไม่เกิน 5MB` });
+                }
+                return res.status(500).json({ message: `Multer Error: ${err.message}` });
+            } else if (err) {
+                // Handle file filter error
+                if (err.message.includes('อนุญาตเฉพาะไฟล์รูปภาพ')) {
+                    return res.status(400).json({ message: err.message });
+                }
+                console.error('Upload Error:', err);
+                return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์' });
+            }
 
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
-    }
+            if (!req.file) {
+                return res.status(400).json({ message: 'กรุณาเลือกไฟล์รูปภาพ' });
+            }
 
-    // Delete old profile image if exists
-    if (user.profileImage && !user.profileImage.includes('ui-avatars.com')) {
-      const oldImagePath = path.join(process.cwd(), user.profileImage);
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-      }
-    }
+            const user = await User.findById(req.user._id) as IUser | null;
+            if (!user) {
+                // Clean up the newly uploaded file if user is not found
+                fs.unlinkSync(req.file.path); 
+                return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
+            }
 
-    // Update user with new image path
-    const imagePath = `/uploads/profiles/${req.file.filename}`;
-    user.profileImage = imagePath;
-    await user.save();
+            // --- Delete old profile image if exists ---
+            if (user.profileImage && user.profileImage.includes('/uploads/profiles/')) {
+                // Extract filename from the stored URL path
+                const filename = path.basename(user.profileImage);
+                // Construct the full file system path
+                const oldImagePath = path.join(process.cwd(), 'uploads', 'profiles', filename);
+                
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
 
-    const updatedUser = await User.findById(req.user._id).select('-password');
-    
-    res.json({ 
-      message: 'อัปเดตรูปโปรไฟล์สำเร็จ', 
-      user: updatedUser 
+            // Update user with new image path (Store the public URL path: /uploads/profiles/filename.ext)
+            const imagePath = `/uploads/profiles/${req.file.filename}`;
+            user.profileImage = imagePath;
+            await user.save();
+
+            const updatedUser = await fetchAndFormatUser(req.user._id);
+            
+            res.json({ 
+                message: 'อัปเดตรูปโปรไฟล์สำเร็จ', 
+                user: updatedUser 
+            });
+
+        } catch (error: any) {
+            console.error('Image upload final step error:', error);
+            res.status(500).json({ message: 'เกิดข้อผิดพลาดของเซิร์ฟเวอร์', error: error.message });
+        }
     });
-  } catch (error: any) {
-    console.error('Image upload error:', error);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดของเซิร์ฟเวอร์', error: error.message });
-  }
 });
 
 // Change password
 router.put('/change-password', authenticateToken, async (req: any, res: any) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    
-    console.log('Password change attempt:', {
-      userId: req.user._id,
-      hasCurrentPassword: !!currentPassword,
-      hasNewPassword: !!newPassword,
-      newPasswordLength: newPassword?.length
-    });
     
     // Validate input
     if (!currentPassword || !newPassword) {
@@ -289,7 +301,6 @@ router.put('/change-password', authenticateToken, async (req: any, res: any) => 
       password: hashedPassword 
     });
     
-    console.log('Password changed successfully for user:', req.user._id);
     res.json({ message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
   } catch (error: any) {
     console.error('Change password error:', error);
@@ -306,28 +317,25 @@ router.put('/password', authenticateToken, async (req: any, res: any) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: 'กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่' });
     }
-    
+
+    // ... (rest of password change logic)
     if (newPassword.length < 6) {
       return res.status(400).json({ message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร' });
     }
     
-    // Get user with password field
     const user = await User.findById(req.user._id).select('+password');
     if (!user) {
       return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
     }
     
-    // Verify current password
     const isCurrentPasswordValid = await user.comparePassword(currentPassword);
     if (!isCurrentPasswordValid) {
       return res.status(400).json({ message: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
     }
 
-    // Hash new password manually before saving
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     
-    // Update password directly in database to avoid pre-save hook
     await User.findByIdAndUpdate(req.user._id, { 
       password: hashedPassword 
     });
@@ -399,7 +407,7 @@ router.get('/:id', async (req: any, res: any) => {
       },
       products,
       messages
-      // ❌ ไม่ต้องส่ง reviews แล้ว
+     
     });
   } catch (error) {
     console.error('Get user by ID error:', error);
