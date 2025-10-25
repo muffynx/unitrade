@@ -43,28 +43,7 @@ const getClientIp = (req: Request): string => {
   return req.ip || 'unknown';
 };
 
-// View Count tracking - SIMPLIFIED
-const viewedMessages = new Map<string, number>();
 
-const hasViewed = (key: string): boolean => {
-  const timestamp = viewedMessages.get(key);
-  if (!timestamp) return false;
-  return Date.now() - timestamp < 30 * 60 * 1000; // 30 minutes
-};
-
-const markAsViewed = (key: string): void => {
-  viewedMessages.set(key, Date.now());
-  
-  // Clean up old entries
-  if (viewedMessages.size > 10000) {
-    const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    for (const [k, timestamp] of viewedMessages.entries()) {
-      if (timestamp < oneHourAgo) {
-        viewedMessages.delete(k);
-      }
-    }
-  }
-};
 
 // GET ALL PRODUCTS
 router.get('/', async (req: Request, res: Response) => {
@@ -181,8 +160,27 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// VIEW TRACKING - ULTRA SIMPLIFIED & SAFE
-// ✅ แก้ไข: VIEW TRACKING - ใช้ findByIdAndUpdate และ $inc
+// View Count
+const viewedMessages = new Map<string, number>();
+
+const hasViewed = (key: string): boolean => {
+  const timestamp = viewedMessages.get(key);
+  if (!timestamp) return false;
+  const thirtyMinutes = 30 * 60 * 1000;
+  return Date.now() - timestamp < thirtyMinutes;
+};
+
+
+const markAsViewed = (key: string): void => {
+  viewedMessages.set(key, Date.now());
+  if (viewedMessages.size > 10000) {
+    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+    for (const [k, timestamp] of viewedMessages.entries()) {
+      if (timestamp < oneHourAgo) viewedMessages.delete(k);
+    }
+  }
+};
+
 router.post('/:id/view', async (req: Request, res: Response) => {
   try {
     const productId = req.params.id;
