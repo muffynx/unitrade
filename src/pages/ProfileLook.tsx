@@ -150,13 +150,21 @@ try {
 
       setReviews(reviewsData);
 
+      const calculatedReviewCount = reviewsData.length;
+      let calculatedAverageRating = 0;
+      if (calculatedReviewCount > 0) {
+          const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
+          calculatedAverageRating = totalRating / calculatedReviewCount;
+      }
+
       // อัปเดต profile ด้วยค่า rating
-      setProfile((prev) =>
+setProfile((prev) =>
         prev
           ? {
               ...prev,
- averageRating: averageRating || reviewRes.data.averageRating || prev.averageRating,
-              reviewCount: reviewCount || reviewRes.data.reviewCount || prev.reviewCount,
+              // ใช้ค่าที่คำนวณได้เป็นหลัก
+              averageRating: calculatedAverageRating,
+              reviewCount: calculatedReviewCount,
             }
           : prev
       );
@@ -479,9 +487,9 @@ useEffect(() => {
                 <Star size={16} />
                 <span className="text-xs">รีวิว</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{profile.reviewCount || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{reviews.length || 0}</p>
             </div>
-          </div>
+          </div>  
         </div>
       </div>
 
