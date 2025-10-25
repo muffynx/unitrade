@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import axios from "axios";
 import {
   Heart,
@@ -35,8 +35,8 @@ interface Product {
   condition: string;
   location: string;
   createdAt: string;
-  user: { 
-    _id: string; 
+  user: {
+    _id: string;
     name: string;
     avatar?: string;
     profileImage?: string;
@@ -63,10 +63,14 @@ const Button = ({
   const baseClasses =
     "flex items-center justify-center font-medium rounded-lg transition-colors font-sarabun";
   const variantClasses = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed",
-    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed",
-    ghost: "bg-transparent text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed",
-    danger: "bg-red-100 text-red-700 hover:bg-red-200 disabled:bg-gray-100 disabled:cursor-not-allowed",
+    primary:
+      "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed",
+    secondary:
+      "bg-gray-100 text-gray-900 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed",
+    ghost:
+      "bg-transparent text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed",
+    danger:
+      "bg-red-100 text-red-700 hover:bg-red-200 disabled:bg-gray-100 disabled:cursor-not-allowed",
   };
 
   return (
@@ -150,9 +154,18 @@ const CardContent = ({
 }) => <div className={`p-4 pt-0 ${className}`}>{children}</div>;
 
 // ✅ Helper function to get avatar URL
-const getAvatarUrl = (user: { avatar?: string; profileImage?: string; name: string }) => {
-  return user.profileImage || user.avatar || 
-         `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=128`;
+const getAvatarUrl = (user: {
+  avatar?: string;
+  profileImage?: string;
+  name: string;
+}) => {
+  return (
+    user.profileImage ||
+    user.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user.name
+    )}&background=random&size=128`
+  );
 };
 
 // Component Gallery สำหรับแสดงรูปภาพ
@@ -169,7 +182,7 @@ function Gallery({ product }: { product: Product }) {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const response = await axios.get(`${API_URL}/api/favorites`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -191,7 +204,7 @@ function Gallery({ product }: { product: Product }) {
 
     setLoadingBookmark(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
       if (isBookmarked) {
         await axios.delete(`${API_URL}/api/favorites/${product._id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -215,7 +228,9 @@ function Gallery({ product }: { product: Product }) {
         toast.error("กรุณาเข้าสู่ระบบอีกครั้ง");
         navigate("/login");
       } else {
-        toast.error(err.response?.data?.message || "ไม่สามารถเพิ่ม/ลบรายการโปรดได้");
+        toast.error(
+          err.response?.data?.message || "ไม่สามารถเพิ่ม/ลบรายการโปรดได้"
+        );
       }
     } finally {
       setLoadingBookmark(false);
@@ -276,9 +291,10 @@ function Gallery({ product }: { product: Product }) {
   }, [isModalOpen, product.images.length]);
 
   // ✅ ป้องกันกรณีไม่มีรูปภาพ
-  const displayImages = product.images.length > 0 
-    ? product.images 
-    : ["https://via.placeholder.com/400x300?text=No+Image"];
+  const displayImages =
+    product.images.length > 0
+      ? product.images
+      : ["https://via.placeholder.com/400x300?text=No+Image"];
 
   return (
     <div className="space-y-4 font-sarabun">
@@ -289,7 +305,8 @@ function Gallery({ product }: { product: Product }) {
           className="h-full w-full object-cover cursor-pointer"
           onClick={() => openModal(active)}
           onError={(e) => {
-            e.currentTarget.src = "https://via.placeholder.com/400x300?text=Image+Error";
+            e.currentTarget.src =
+              "https://via.placeholder.com/400x300?text=Image+Error";
           }}
         />
 
@@ -376,7 +393,8 @@ function Gallery({ product }: { product: Product }) {
                 alt={`thumb-${i}`}
                 className="h-full w-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.src = "https://via.placeholder.com/100x75?text=Error";
+                  e.currentTarget.src =
+                    "https://via.placeholder.com/100x75?text=Error";
                 }}
               />
             </button>
@@ -409,7 +427,8 @@ function Gallery({ product }: { product: Product }) {
                 alt={`${product.title}-${modalImageIndex}`}
                 className="max-h-[85vh] object-contain rounded"
                 onError={(e) => {
-                  e.currentTarget.src = "https://via.placeholder.com/800x600?text=Image+Error";
+                  e.currentTarget.src =
+                    "https://via.placeholder.com/800x600?text=Image+Error";
                 }}
               />
 
@@ -446,7 +465,8 @@ function Gallery({ product }: { product: Product }) {
                     }`}
                     onClick={() => setModalImageIndex(idx)}
                     onError={(e) => {
-                      e.currentTarget.src = "https://via.placeholder.com/100x75?text=Error";
+                      e.currentTarget.src =
+                        "https://via.placeholder.com/100x75?text=Error";
                     }}
                   />
                 ))}
@@ -506,51 +526,22 @@ function SellerPanel({ product }: { product: Product }) {
   const navigate = useNavigate();
   const [loadingChat, setLoadingChat] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-const [reportReason, setReportReason] = useState("");
-  const [averageRating, setAverageRating] = useState<number>(0); // State สำหรับ Rating
-  const [reviewCount, setReviewCount] = useState<number>(0);   // State สำหรับ Review Count
+  const [reportReason, setReportReason] = useState("");
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [reviewCount, setReviewCount] = useState<number>(0);
 
-
-useEffect(() => {
+  useEffect(() => {
     const fetchUserReviews = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
-        const response = await axios.get(`${API_URL}/api/reviews/user/${product.user._id}`);
-        
-        // --- START FIX: คำนวณ Rating และ Count จาก List Reviews พร้อมการกรอง ---
-        let reviewsData: any[] = []; 
-        
-        // จัดการรูปแบบ Response
-        if (Array.isArray(response.data)) {
-          reviewsData = response.data;
-        } else if (response.data && Array.isArray(response.data.reviews)) {
-          reviewsData = response.data.reviews;
-        } 
-        
-        // **✅ เพิ่ม: กรองรีวิวที่สินค้าถูกลบ (productId เป็น null หรือไม่มี _id)**
-        const filteredReviewsData = reviewsData.filter(
-            (review) => review.productId && review.productId._id
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const response = await axios.get(
+          `${API_URL}/api/reviews/user/${product.user._id}`
         );
-        
-        const calculatedReviewCount = filteredReviewsData.length;
-        let calculatedAverageRating = 0;
-        
-        if (calculatedReviewCount > 0) {
-            // คำนวณผลรวม Rating และหาค่าเฉลี่ยจากข้อมูลที่กรองแล้ว
-            const totalRating = filteredReviewsData.reduce((sum, review) => sum + (review.rating || 0), 0);
-            calculatedAverageRating = totalRating / calculatedReviewCount;
-        }
-        
-        // อัปเดต State ด้วยค่าที่คำนวณได้
-        setAverageRating(calculatedAverageRating);
-        setReviewCount(calculatedReviewCount);
-        // --- END FIX ---
-        
+        console.log("User Reviews API Response:", response.data); // ✅ Debug
+        setAverageRating(response.data.averageRating || 0);
+        setReviewCount(response.data.reviewCount || 0);
       } catch (err) {
         console.error("Fetch user reviews error:", err);
-        // ตั้งค่าเป็น 0 เมื่อเกิดข้อผิดพลาดในการดึงข้อมูล
-        setAverageRating(0);
-        setReviewCount(0);
       }
     };
     fetchUserReviews();
@@ -580,7 +571,7 @@ useEffect(() => {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const userResponse = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -630,7 +621,7 @@ useEffect(() => {
 
     try {
       const token = localStorage.getItem("token");
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
       await axios.post(
         `${API_URL}/api/reports`,
@@ -758,12 +749,14 @@ useEffect(() => {
                   className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => navigate(`/profile/${product.user._id}`)}
                   onError={(e) => {
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(product.user.name)}&background=random&size=128`;
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      product.user.name
+                    )}&background=random&size=128`;
                   }}
                 />
                 <div className="flex-1">
                   {/* ✅ เพิ่ม onClick ให้ชื่อผู้ขายเพื่อไปยังโปรไฟล์ */}
-                  <div 
+                  <div
                     className="text-sm font-medium cursor-pointer hover:text-blue-600 transition-colors"
                     onClick={() => navigate(`/profile/${product.user._id}`)}
                   >
@@ -774,9 +767,12 @@ useEffect(() => {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                   <span>
-    {averageRating > 0 ? averageRating.toFixed(1) : "ไม่มีคะแนน"} ({reviewCount} รีวิว)
-  </span>
+                    <span>
+                      {averageRating > 0
+                        ? averageRating.toFixed(1)
+                        : "ไม่มีคะแนน"}{" "}
+                      ({reviewCount} รีวิว)
+                    </span>
                   </div>
                 </div>
               </div>
@@ -871,7 +867,9 @@ useEffect(() => {
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     <option value="">เลือกเหตุผล</option>
-                    <option value="inappropriate_content">เนื้อหาไม่เหมาะสม</option>
+                    <option value="inappropriate_content">
+                      เนื้อหาไม่เหมาะสม
+                    </option>
                     <option value="spam">สแปม</option>
                     <option value="fake_information">ข้อมูลปลอม</option>
                     <option value="scam">พยายามหลอกลวง</option>
@@ -883,9 +881,12 @@ useEffect(() => {
 
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div className="flex gap-2">
-                    <AlertCircle size={16} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <AlertCircle
+                      size={16}
+                      className="text-yellow-600 flex-shrink-0 mt-0.5"
+                    />
                     <p className="text-xs text-yellow-800">
-                      การรายงานจะถูกส่งไปยังผู้ดูแลระบบเพื่อตรวจสอบ 
+                      การรายงานจะถูกส่งไปยังผู้ดูแลระบบเพื่อตรวจสอบ
                       กรุณารายงานเฉพาะกรณีที่มีเนื้อหาไม่เหมาะสมจริงๆ เท่านั้น
                     </p>
                   </div>
@@ -927,7 +928,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const response = await axios.get(`${API_URL}/api/product`, {
           params: {
             category: currentProduct.category,
@@ -1008,7 +1009,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
       const conversationResponse = await axios.post(
         `${API_URL}/api/conversations/product/${product._id}`,
@@ -1057,7 +1058,8 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
                   alt={product.title}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   onError={(e) => {
-                    e.currentTarget.src = "https://via.placeholder.com/400x300?text=Image+Error";
+                    e.currentTarget.src =
+                      "https://via.placeholder.com/400x300?text=Image+Error";
                   }}
                 />
                 <div className="absolute left-3 top-3">
@@ -1111,7 +1113,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
 
                 <div className="flex items-center justify-between">
                   {/* ✅ เพิ่ม onClick ให้ชื่อผู้ขายเพื่อไปยังโปรไฟล์ */}
-                  <div 
+                  <div
                     className="text-xs text-gray-500 flex items-center gap-1 cursor-pointer hover:text-blue-600 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1151,12 +1153,12 @@ export default function ProductDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const fetchProduct= async () => {
+    const fetchProduct = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
         const response = await axios.get(`${API_URL}/api/product/${id}`);
         setProduct(response.data);
-        
+
         // ✅ บันทึกยอดเข้าชม
         try {
           await axios.post(`${API_URL}/api/products/${id}/view`);
@@ -1164,10 +1166,11 @@ export default function ProductDetail() {
           console.error("View tracking error:", viewErr);
           // ไม่ต้อง throw error เพราะไม่สำคัญมาก
         }
-        
+
         setLoading(false);
       } catch (err: any) {
-
+        console.error("Fetch product error:", err);
+        setError(err.response?.data?.message || "ไม่สามารถดึงข้อมูลสินค้าได้");
         setLoading(false);
       }
     };

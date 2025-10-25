@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -9,12 +9,13 @@ import {
   FaPalette, 
   FaSave, 
   FaTimes, 
-  FaCamera, 
   FaCheck,
   FaTrash,
   FaEye,
   FaEyeSlash,
-  FaChevronLeft // Optional: for 'Back' button
+  FaChevronLeft,
+  FaCamera, // Added Camera icon
+  FaSpinner // Added Spinner icon
 } from 'react-icons/fa';
 import '../i18n';
 
@@ -69,9 +70,12 @@ const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
 
   const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false); // State สำหรับการอัปโหลดรูปภาพ
   const [message, setMessage] = useState({ text: '', type: '' });
   const [user, setUser] = useState<User | null>(null);
   
+  const fileInputRef = useRef<HTMLInputElement>(null); // Ref สำหรับ input file
+
   const [profileForm, setProfileForm] = useState({
     name: '',
     username: '',
@@ -88,9 +92,8 @@ const Settings: React.FC = () => {
   });
 
   const [preferences, setPreferences] = useState({
-    // Initial language should reflect the current i18n language setting
     language: i18n.language, 
-    emailNotifications: true, // Fixed state bug in Notification Tab where this was wrongly updated
+    emailNotifications: true,
     pushNotifications: true,
     marketingEmails: false
   });
@@ -101,7 +104,7 @@ const Settings: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const loadTheme = () => {
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -134,7 +137,6 @@ const Settings: React.FC = () => {
 
       setPreferences(prev => ({
         ...prev,
-        // Ensure language preference matches i18n state on load
         language: i18n.language 
       }));
     } catch (error) {
@@ -148,10 +150,60 @@ const Settings: React.FC = () => {
     loadTheme();
   }, [fetchUserProfile]);
   
-  // Update local preference state when i18n changes externally (e.g., via Header component)
   useEffect(() => {
     setPreferences(prev => ({ ...prev, language: i18n.language }));
   }, [i18n.language]);
+
+  // --- Function: Handle Image Upload ---
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit check
+      setMessage({ text: t('file_too_large') || 'File size exceeds 5MB limit.', type: 'error' });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    const token = localStorage.getItem('token');
+    setIsUploading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/api/users/profile/image`, 
+        formData,
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      const updatedUser = response.data.user;
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser)); // Update local storage
+      setMessage({ 
+        text: t('profile_image_updated') || 'Profile image updated successfully', 
+        type: 'success' 
+      });
+
+    } catch (error: any) {
+      console.error('Image upload error:', error);
+      const errorMsg = error.response?.data?.message || t('upload_failed') || 'Image upload failed';
+      setMessage({ text: errorMsg, type: 'error' });
+    } finally {
+      setIsUploading(false);
+      // Clear file input value
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,13 +247,19 @@ const Settings: React.FC = () => {
         }
       );
 
-      setUser(response.data.user);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      const updatedUser = response.data.user;
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
       
       setMessage({ 
         text: t('profile_updated_successfully') || 'Profile updated successfully', 
         type: 'success' 
       });
+
+      setTimeout(() => {
+        setMessage({ text: '', type: '' });
+      }, 3000);
+
     } catch (error: any) {
       console.error('Profile update error:', error);
       const errorMsg = error.response?.data?.message || t('update_failed') || 'Update failed';
@@ -263,6 +321,11 @@ const Settings: React.FC = () => {
       setShowCurrentPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
+
+      setTimeout(() => {
+        setMessage({ text: '', type: '' });
+      }, 3000);
+
     } catch (error: any) {
       console.error('Password change error:', error);
       
@@ -282,6 +345,10 @@ const Settings: React.FC = () => {
     i18n.changeLanguage(lng);
     setPreferences(prev => ({ ...prev, language: lng }));
     setMessage({ text: t('language_changed') || 'Language changed', type: 'success' });
+    
+    setTimeout(() => {
+      setMessage({ text: '', type: '' });
+    }, 2000);
   };
 
   const handleThemeChange = (newTheme: string) => {
@@ -290,53 +357,7 @@ const Settings: React.FC = () => {
     localStorage.setItem('theme', newTheme);
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setMessage({ text: t('please_upload_image_file') || 'Please upload an image file', type: 'error' });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ text: t('image_too_large') || 'Image is too large (max 5MB)', type: 'error' });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('profileImage', file);
-
-      const token = localStorage.getItem('token');
-
-      const response = await axios.put(
-        `${API_URL}/api/users/profile/image`, 
-        formData, 
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-
-      setUser(response.data.user);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      setMessage({ text: t('profile_image_updated') || 'Profile image updated', type: 'success' });
-    } catch (error) {
-      console.error('Image upload error:', error);
-      setMessage({ text: t('image_upload_failed') || 'Image upload failed', type: 'error' });
-    } finally {
-      setLoading(false);
-      if (event.target) event.target.value = '';
-    }
-  };
-
   const handleDeleteAccount = async () => {
-    // We use the short warning key for the WIDGET text, but if this runs, it must trigger the confirmation warning.
     if (!window.confirm(t('confirm_account_deletion') || 'Are you sure you want to delete your account? This action cannot be undone.')) {
       return;
     }
@@ -371,48 +392,75 @@ const Settings: React.FC = () => {
     { id: 'appearance', label: t('appearance') || 'Appearance', icon: FaPalette },
   ];
 
+  // ✅ Updated Avatar Component with Upload
   const renderAvatar = () => {
-    const avatarUrl = user?.profileImage || 
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=random&size=128`;
+    // Check if profileImage is a local path (starts with /) or a full URL/avatar API
+    const avatarUrl = user?.profileImage && user.profileImage.startsWith('/') 
+        ? `${API_URL}${user.profileImage}`
+        : user?.profileImage || 
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=random&size=128`;
+    
+    // State to handle image loading errors (to switch to initials if the custom image fails)
+    const [imgError, setImgError] = useState(!user?.profileImage);
+
+    useEffect(() => {
+        setImgError(!user?.profileImage);
+    }, [user?.profileImage]);
+
 
     return (
-      <div className="relative group">
-        <div className="relative">
-          <img
-            src={avatarUrl}
-            alt={user?.name || "User"}
-            className="w-24 h-24 rounded-full object-cover border-2 border-blue-500"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
-            }}
-          />
-          <div 
-            className={`absolute inset-0 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-2xl ${user?.profileImage ? 'hidden' : 'flex'}`}
-            aria-hidden={!!user?.profileImage}
-          >
-            {user ? (user.name ? user.name.charAt(0).toUpperCase() : "U") : "U"}
-          </div>
+      <div className="relative group w-28 h-28 flex-shrink-0">
+        {/* Hidden Input for file selection */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleImageUpload}
+          accept="image/jpeg,image/png,image/jpg"
+          className="hidden"
+          disabled={isUploading}
+        />
+
+        {/* Avatar Display */}
+        <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg bg-gray-100 flex items-center justify-center">
+            
+            {(user?.profileImage && !imgError) ? (
+                <img
+                    src={avatarUrl}
+                    alt={user?.name || "User Avatar"}
+                    className="w-full h-full object-cover"
+                    onError={() => setImgError(true)}
+                />
+            ) : (
+                <div className="text-4xl font-bold text-blue-600">
+                     {user ? (user.name ? user.name.charAt(0).toUpperCase() : "U") : "U"}
+                </div>
+            )}
         </div>
-        <label 
-          htmlFor="avatar-upload"
-          className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600 transition-colors shadow-lg"
+        
+        {/* Upload Button Overlay */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className={`absolute inset-0 w-full h-full rounded-full flex items-center justify-center bg-black bg-opacity-40 text-white opacity-0 transition-opacity group-hover:opacity-100 ${isUploading ? 'opacity-100 cursor-not-allowed' : ''}`}
+          aria-label={t('change_profile_picture') || 'Change profile picture'}
         >
-          <FaCamera size={14} />
-          <input
-            id="avatar-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-        </label>
+          {isUploading ? (
+            <FaSpinner className="animate-spin" size={24} />
+          ) : (
+            <FaCamera size={24} />
+          )}
+        </button>
       </div>
     );
   };
+  // End of renderAvatar
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 font-sarabun">
       <div className="max-w-6xl mx-auto px-4">
+        
+        {/* ✅ Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -420,7 +468,7 @@ const Settings: React.FC = () => {
               <p className="text-gray-600 mt-2">{t('manage_your_account_settings') || 'Manage your account settings'}</p>
             </div>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/profile')}
               className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
             >
               <FaChevronLeft size={12} />
@@ -429,21 +477,35 @@ const Settings: React.FC = () => {
           </div>
         </div>
 
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-lg ${
+        {/* ✅ Alert Message */}
+        {(message.text || isUploading) && ( // Show alert if uploading is in progress
+          <div className={`mb-6 p-4 rounded-lg flex items-center justify-between ${
             message.type === 'success' 
               ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
+              : message.type === 'error'
+                ? 'bg-red-50 text-red-800 border border-red-200'
+                : isUploading ? 'bg-blue-50 text-blue-800 border border-blue-200' : ''
           }`}>
-            {message.text}
+            <span className="flex items-center gap-2">
+              {isUploading && <FaSpinner className="animate-spin" />}
+              {isUploading ? (t('uploading_image') || 'Uploading image...') : message.text}
+            </span>
+            <button 
+              onClick={() => setMessage({ text: '', type: '' })}
+              className={`text-gray-500 hover:text-gray-700 ${isUploading ? 'hidden' : ''}`}
+            >
+              <FaTimes size={14} />
+            </button>
           </div>
         )}
 
+        {/* ✅ Main Content */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="flex flex-col lg:flex-row">
             
+            {/* ✅ Sidebar Tabs */}
             <div className="lg:w-64 bg-gray-50 border-r border-gray-200">
-              <nav className="p-4">
+              <nav className="p-4 space-y-2">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -452,7 +514,7 @@ const Settings: React.FC = () => {
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
                         activeTab === tab.id
-                          ? 'bg-white text-blue-600 shadow-sm border border-gray-200'
+                          ? 'bg-white text-blue-600 shadow-sm border border-blue-200'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
@@ -464,26 +526,37 @@ const Settings: React.FC = () => {
               </nav>
             </div>
 
-            <div className="flex-1 p-6">
+            {/* ✅ Content Area */}
+            <div className="flex-1 p-6 lg:p-8">
               
+              {/* ============ PROFILE TAB ============ */}
               {activeTab === 'profile' && (
                 <div className="max-w-2xl">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('profile_settings') || 'Profile Settings'}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                    {t('profile_settings') || 'Profile Settings'}
+                  </h2>
                   
-                  <div className="flex items-center gap-6 mb-8">
+                  {/* ✅ Profile Header Card (Now includes avatar upload feature) */}
+                  <div className="flex items-start gap-6 mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
                     {renderAvatar()}
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">{user?.name}</h3>
-                      <p className="text-gray-600">{user?.email}</p>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900">{user?.name}</h3>
+                      <p className="text-gray-600">@{user?.username || user?.email?.split('@')[0]}</p>
+                      <div className="mt-3 space-y-1 text-sm text-gray-600">
+                        <div className="text-gray-500">
+                            {t('click_avatar_to_change') || 'Click on the image to change your profile picture.'}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
+                  {/* ✅ Profile Form */}
                   <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="name">
-                          {t('full_name') || 'Full Name'}
+                          {t('full_name') || 'Full Name'} <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="name"
@@ -492,13 +565,13 @@ const Settings: React.FC = () => {
                           onChange={(e) => setProfileForm(prev => ({ ...prev, name: e.target.value }))}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
-                          aria-required
+                          placeholder="กรอกชื่อ-นามสกุล"
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="username">
-                          {t('username') || 'Username'}
+                          {t('username') || 'Username'} <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="username"
@@ -507,13 +580,13 @@ const Settings: React.FC = () => {
                           onChange={(e) => setProfileForm(prev => ({ ...prev, username: e.target.value }))}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
-                          aria-required
+                          placeholder="ชื่อผู้ใช้"
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
-                          {t('email') || 'Email'}
+                          {t('email') || 'Email'} <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="email"
@@ -522,7 +595,7 @@ const Settings: React.FC = () => {
                           onChange={(e) => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
-                          aria-required
+                          placeholder="email@example.com"
                         />
                       </div>
 
@@ -536,6 +609,7 @@ const Settings: React.FC = () => {
                           value={profileForm.phone}
                           onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="0XX-XXX-XXXX"
                         />
                       </div>
 
@@ -549,6 +623,7 @@ const Settings: React.FC = () => {
                           value={profileForm.university}
                           onChange={(e) => setProfileForm(prev => ({ ...prev, university: e.target.value }))}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="มหาวิทยาลัย..."
                         />
                       </div>
 
@@ -562,22 +637,23 @@ const Settings: React.FC = () => {
                           value={profileForm.studentId}
                           onChange={(e) => setProfileForm(prev => ({ ...prev, studentId: e.target.value }))}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="653450000-0"
                         />
                       </div>
                     </div>
 
-                    <div className="flex gap-3 mt-6">
+                    <div className="flex gap-3 pt-4 border-t">
                       <button
                         type="submit"
-                        disabled={loading}
-                        className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                        disabled={loading || isUploading}
+                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                       >
                         <FaSave size={14} />
                         {loading ? (t('saving') || 'Saving...') : (t('save_changes') || 'Save Changes')}
                       </button>
                       <button
                         type="button"
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate('/profile')}
                         className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         <FaTimes size={14} />
@@ -588,15 +664,18 @@ const Settings: React.FC = () => {
                 </div>
               )}
 
+              {/* ============ SECURITY TAB ============ */}
               {activeTab === 'security' && (
                 <div className="max-w-2xl">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('security_settings') || 'Security Settings'}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                    {t('security_settings') || 'Security Settings'}
+                  </h2>
                   
                   <form onSubmit={handlePasswordChange} className="space-y-6">
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {t('current_password') || 'Current Password'}
+                          {t('current_password') || 'Current Password'} <span className="text-red-500">*</span>
                         </label>
                         <PasswordInput
                           value={passwordForm.currentPassword}
@@ -609,12 +688,12 @@ const Settings: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {t('new_password') || 'New Password'}
+                          {t('new_password') || 'New Password'} <span className="text-red-500">*</span>
                         </label>
                         <PasswordInput
                           value={passwordForm.newPassword}
                           onChange={(value) => setPasswordForm(prev => ({ ...prev, newPassword: value }))}
-                          placeholder={t('enter_new_password') || 'Enter new password'}
+                          placeholder={t('enter_new_password') || 'Enter new password (min 6 characters)'}
                           showPassword={showNewPassword}
                           setShowPassword={setShowNewPassword}
                         />
@@ -622,7 +701,7 @@ const Settings: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {t('confirm_password') || 'Confirm Password'}
+                          {t('confirm_password') || 'Confirm Password'} <span className="text-red-500">*</span>
                         </label>
                         <PasswordInput
                           value={passwordForm.confirmPassword}
@@ -636,28 +715,33 @@ const Settings: React.FC = () => {
 
                     <button
                       type="submit"
-                      disabled={loading}
-                      className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                      disabled={loading || isUploading}
+                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
                       <FaLock size={14} />
                       {loading ? (t('changing_password') || 'Changing...') : (t('change_password') || 'Change Password')}
                     </button>
                   </form>
 
-                  {/* DANGEROUS ZONE - ONLY HERE */}
+                  {/* ✅ DANGER ZONE */}
                   <div className="mt-12 pt-8 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold text-red-600 mb-4">{t('dangerous_zone') || 'Danger Zone'}</h3>
+                    <h3 className="text-lg font-semibold text-red-600 mb-4">
+                      {t('dangerous_zone') || 'Danger Zone'}
+                    </h3>
                     
                     <div className="p-4 border border-red-200 rounded-lg bg-red-50">
                       <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
-                          <h4 className="font-medium text-red-700">{t('delete_account') || 'Delete Account'}</h4>
-                          {/* Using a key that displays the full warning */}
-                          <p className="text-sm text-red-600 mt-1">{t('delete_account_confirm_warning') || 'Once you delete your account, all your data will be permanently removed.'}</p>
+                          <h4 className="font-medium text-red-700">
+                            {t('delete_account') || 'Delete Account'}
+                          </h4>
+                          <p className="text-sm text-red-600 mt-1">
+                            {t('delete_account_confirm_warning') || 'Once you delete your account, all your data will be permanently removed.'}
+                          </p>
                         </div>
                         <button
                           onClick={handleDeleteAccount}
-                          disabled={loading}
+                          disabled={loading || isUploading}
                           className="flex items-center gap-2 px-4 py-2 whitespace-nowrap text-red-700 border border-red-300 rounded-lg hover:bg-red-100 disabled:opacity-50 transition-colors"
                         >
                           <FaTrash size={14} />
@@ -669,16 +753,23 @@ const Settings: React.FC = () => {
                 </div>
               )}
 
+              {/* ============ NOTIFICATIONS TAB ============ */}
               {activeTab === 'notifications' && (
                 <div className="max-w-2xl">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('notification_settings') || 'Notification Settings'}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                    {t('notification_settings') || 'Notification Settings'}
+                  </h2>
                   
-                  <div className="space-y-6">
-                    <div className="p-4 border border-gray-200 rounded-lg">
+                  <div className="space-y-4">
+                    <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-gray-900">{t('email_notifications') || 'Email Notifications'}</h3>
-                          <p className="text-sm text-gray-600">{t('enable_email_notifications_description') || 'Receive email updates'}</p>
+                          <h3 className="font-medium text-gray-900">
+                            {t('email_notifications') || 'Email Notifications'}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {t('enable_email_notifications_description') || 'Receive updates via email'}
+                          </p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -692,11 +783,15 @@ const Settings: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 border border-gray-200 rounded-lg">
+                    <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-gray-900">{t('push_notifications') || 'Push Notifications'}</h3>
-                          <p className="text-sm text-gray-600">{t('enable_push_notifications_description') || 'Enable notifications sent directly to your device.'}</p>
+                          <h3 className="font-medium text-gray-900">
+                            {t('push_notifications') || 'Push Notifications'}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {t('enable_push_notifications_description') || 'Receive notifications on your device'}
+                          </p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -713,22 +808,25 @@ const Settings: React.FC = () => {
                 </div>
               )}
 
+              {/* ============ APPEARANCE TAB ============ */}
               {activeTab === 'appearance' && (
                 <div className="max-w-2xl">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('appearance_settings') || 'Appearance Settings'}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                    {t('appearance_settings') || 'Appearance Settings'}
+                  </h2>
                   
                   <div className="space-y-6">
-                    <div className="p-4 border border-gray-200 rounded-lg">
-                      <h3 className="font-medium text-gray-900 mb-4">{t('language') || 'Language'}</h3>
+                    <div className="p-6 border border-gray-200 rounded-lg">
+                      <h3 className="font-medium text-gray-900 mb-4">
+                        {t('language') || 'Language'}
+                      </h3>
                       
-                      <div className="flex gap-4">
-                        
-                        {/* ----------------- ENGLISH BUTTON ----------------- */}
+                      <div className="grid grid-cols-2 gap-4">
                         <button
                           onClick={() => handleLanguageChange('en')}
-                          className={`flex-1 py-3 px-4 border rounded-lg transition-colors ${
+                          className={`py-3 px-4 border rounded-lg transition-all ${
                             preferences.language === 'en'
-                              ? 'border-blue-500 bg-blue-50 text-blue-700 font-semibold'
+                              ? 'border-blue-500 bg-blue-50 text-blue-700 font-semibold shadow-sm'
                               : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -741,12 +839,11 @@ const Settings: React.FC = () => {
                           </span>
                         </button>
                         
-                        {/* ----------------- THAI BUTTON ----------------- */}
                         <button
                           onClick={() => handleLanguageChange('th')}
-                          className={`flex-1 py-3 px-4 border rounded-lg transition-colors ${
+                          className={`py-3 px-4 border rounded-lg transition-all ${
                             preferences.language === 'th'
-                              ? 'border-blue-500 bg-blue-50 text-blue-700 font-semibold'
+                              ? 'border-blue-500 bg-blue-50 text-blue-700 font-semibold shadow-sm'
                               : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -758,16 +855,15 @@ const Settings: React.FC = () => {
                             {t('thai_name') || 'ไทย'}
                           </span>
                         </button>
-                      </div>
+                      </div >
                     </div>
                   </div>
                 </div>
               )}
+
             </div>
           </div>
         </div>
-        
-        {/* REMOVED: Outer DANGEROUS ZONE block */}
       </div>
     </div>
   );
