@@ -506,24 +506,51 @@ function SellerPanel({ product }: { product: Product }) {
   const navigate = useNavigate();
   const [loadingChat, setLoadingChat] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [reportReason, setReportReason] = useState("");
-const [averageRating, setAverageRating] = useState<number>(0);
-const [reviewCount, setReviewCount] = useState<number>(0);
+const [reportReason, setReportReason] = useState("");
+  const [averageRating, setAverageRating] = useState<number>(0); // State สำหรับ Rating
+  const [reviewCount, setReviewCount] = useState<number>(0);   // State สำหรับ Review Count
+
 
 useEffect(() => {
-  const fetchUserReviews = async () => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
-      const response = await axios.get(`${API_URL}/api/reviews/user/${product.user._id}`);
-      console.log('User Reviews API Response:', response.data); // ✅ Debug
-      setAverageRating(response.data.averageRating || 0);
-      setReviewCount(response.data.reviewCount || 0);
-    } catch (err) {
-      console.error("Fetch user reviews error:", err);
-    }
-  };
-  fetchUserReviews();
-}, [product.user._id]);
+    const fetchUserReviews = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        const response = await axios.get(`${API_URL}/api/reviews/user/${product.user._id}`);
+        // console.log('User Reviews API Response:', response.data); // ✅ Debug (สามารถลบทิ้งได้)
+        
+        // --- START FIX: คำนวณ Rating และ Count จาก List Reviews ---
+        let reviewsData: any[] = []; 
+        
+        // จัดการรูปแบบ Response ที่อาจเป็น Array ตรงๆ หรือ Nested Object
+        if (Array.isArray(response.data)) {
+          reviewsData = response.data;
+        } else if (response.data && Array.isArray(response.data.reviews)) {
+          reviewsData = response.data.reviews;
+        } 
+        
+        const calculatedReviewCount = reviewsData.length;
+        let calculatedAverageRating = 0;
+        
+        if (calculatedReviewCount > 0) {
+            // คำนวณผลรวม Rating และหาค่าเฉลี่ย
+            const totalRating = reviewsData.reduce((sum, review) => sum + (review.rating || 0), 0);
+            calculatedAverageRating = totalRating / calculatedReviewCount;
+        }
+        
+        // อัปเดต State ด้วยค่าที่คำนวณได้
+        setAverageRating(calculatedAverageRating);
+        setReviewCount(calculatedReviewCount);
+        // --- END FIX ---
+        
+      } catch (err) {
+        console.error("Fetch user reviews error:", err);
+        // ตั้งค่าเป็น 0 เมื่อเกิดข้อผิดพลาดในการดึงข้อมูล
+        setAverageRating(0);
+        setReviewCount(0);
+      }
+    };
+    fetchUserReviews();
+  }, [product.user._id]);
   const getConditionText = (condition: string) => {
     switch (condition) {
       case "new":
