@@ -696,63 +696,53 @@ const ProfileLook: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {reviews && reviews.length > 0 ? (
-                getSortedReviews().map((review) => (
-                  <div
-                    key={review._id}
-                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start gap-3">
-                      {/* Reviewer Image */}
-                      <div className="flex-shrink-0">
-                        {review.reviewerId.profileImage ? (
-                          <img
-                            src={review.reviewerId.profileImage}
-                            alt={review.reviewerId.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <User size={20} className="text-blue-600" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Review Content */}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <p className="font-medium text-sm">{review.reviewerId.name}</p>
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                size={16}
-                                className={`${
-                                  star <= review.rating
-                                    ? 'text-yellow-400 fill-current'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">{formatTime(review.createdAt)}</p>
-                        <p className="text-sm text-gray-700 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 break-words">
-                          {review.comment || "ไม่มีความคิดเห็น"}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          สินค้า: <span className="font-medium">{review.productId.title}</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <Star size={48} className="mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-medium">ยังไม่มีรีวิว</p>
-                  <p className="text-sm">ผู้ใช้คนนี้ยังไม่ได้รับรีวิวใดๆ</p>
-                </div>
-              )}
+  getSortedReviews().map((review) => (
+    <div key={review._id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0">
+          {review.reviewerId.profileImage ? (
+            <img
+              src={review.reviewerId.profileImage}
+              alt={review.reviewerId.name}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+              <User size={20} className="text-blue-600" />
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <p className="font-medium text-sm">{review.reviewerId.name}</p>
+            <div className="flex">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={16}
+                  className={`${star <= review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                />
+              ))}
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">{formatTime(review.createdAt)}</p>
+          <p className="text-sm text-gray-700 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 break-words">
+            {review.comment || "ไม่มีความคิดเห็น"}
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            สินค้า: <span className="font-medium">{review.productId.title}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  ))
+) : (
+  <div className="text-center py-12 text-gray-500">
+    <Star size={48} className="mx-auto mb-4 text-gray-300" />
+    <p className="text-lg font-medium">ยังไม่มีรีวิว</p>
+    <p className="text-sm">ผู้ใช้คนนี้ยังไม่ได้รับรีวิวใดๆ</p>
+  </div>
+)}
             </div>
           )}
         </div>
