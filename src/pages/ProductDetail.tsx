@@ -1161,14 +1161,13 @@ export default function ProductDetail() {
         try {
           await axios.post(`${API_URL}/api/products /${id}/view`);
         } catch (viewErr) {
-          console.error("View tracking error:", viewErr);
+        //  console.error("View tracking error:", viewErr);
           // ไม่ต้อง throw error เพราะไม่สำคัญมาก
         }
         
         setLoading(false);
       } catch (err: any) {
-        console.error("Fetch product error:", err);
-        setError(err.response?.data?.message || "ไม่สามารถดึงข้อมูลสินค้าได้");
+
         setLoading(false);
       }
     };
