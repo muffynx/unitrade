@@ -23,28 +23,24 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const NODE_ENV = process.env.NODE_ENV || "development";
 
-// ✅ ตั้งค่า trust proxy (จำเป็นเมื่ออยู่หลัง proxy เช่น Render หรือ Vercel)
+// ✅ trust proxy (สำหรับ Render / Vercel)
 app.set("trust proxy", 1);
 
-// ✅ เพิ่ม security middleware
+// ✅ Security middleware
 app.use(helmet());
 
-// ✅ ใช้ morgan log เฉพาะตอน development
-if (NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
+// ✅ Logger (เปิดไว้ตลอดก็ได้)
+app.use(morgan("dev"));
 
-// ✅ CORS configuration (รวมทั้ง dev และ production)
-const allowedOrigins =
-  NODE_ENV === "production"
-    ? ["https://unitrade-rho.vercel.app"]
-    : [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175",
-      ];
+// ✅ ปรับ CORS ให้ใช้ whitelist เดียว — ไม่มี NODE_ENV อีกต่อไป
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "https://unitrade-rho.vercel.app",
+  "https://unitrade3.onrender.com",
+];
 
 app.use(
   cors({
@@ -57,15 +53,14 @@ app.use(
 app.use(express.json());
 
 // ✅ ตรวจสอบ Mongo URI
-const mongoURI = process.env.MONGODB_URI;
-if (!mongoURI) {
+if (!process.env.MONGODB_URI) {
   console.error("❌ Missing MONGODB_URI in environment variables");
   process.exit(1);
 }
 
 // ✅ Connect MongoDB
 mongoose
-  .connect(mongoURI)
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
@@ -89,10 +84,10 @@ app.use("/api/admin", adminRoutes);
 
 // ✅ Default route
 app.get("/", (_req, res) => {
-  res.send(`<h1>🚀 UniTrade API is running in ${NODE_ENV} mode</h1>`);
+  res.send("<h1>🚀 UniTrade API is running</h1>");
 });
 
-// ✅ Global error handler (optional)
+// ✅ Global error handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: any) => {
   console.error("🔥 Unhandled error:", err);
   res.status(500).json({ error: "Internal Server Error" });
@@ -100,5 +95,5 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: any) => 
 
 // ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT} [${NODE_ENV}]`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
