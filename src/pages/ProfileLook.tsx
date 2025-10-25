@@ -103,58 +103,60 @@ const ProfileLook: React.FC = () => {
 
   const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!id) {
-        setError("ไม่พบรหัสผู้ใช้");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch user profile, products, and messages
-        const userRes = await axios.get(`${API_URL}/api/users/${id}`);
-        console.log('User API Response:', userRes.data); // ✅ Debug user response
-        setProfile(userRes.data.user);
-        setProducts(userRes.data.products || []);
-        setMessages(userRes.data.messages || []);
-
-        // Fetch reviews
-        const token = localStorage.getItem("token");
-        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-        const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`, config);
-        
-        console.log('Review API Response:', reviewRes.data); // ✅ Debug reviews response
-        setReviews(reviewRes.data.reviews || []);
-        // Optionally update profile with averageRating and reviewCount from review endpoint
-
-        useEffect(() => {
-  console.log('Reviews state:', reviews);
-  console.log('Is array?', Array.isArray(reviews));
-  console.log('Length:', reviews?.length);
-}, [reviews]);
 useEffect(() => {
-  console.log('Sorted Reviews:', getSortedReviews());
-}, [reviews]);
+  const fetchData = async () => {
+    if (!id) {
+      setError("ไม่พบรหัสผู้ใช้");
+      setLoading(false);
+      return;
+    }
 
-        setProfile((prev) => prev ? {
-          ...prev,
-          averageRating: reviewRes.data.averageRating || prev.averageRating,
-          reviewCount: reviewRes.data.reviewCount || prev.reviewCount
-        } : prev);
+    try {
+      setLoading(true);
+      setError(null);
 
-      } catch (err: any) {
-        console.error("Fetch profile look error:", err);
-        setError(err.response?.data?.message || "ไม่สามารถโหลดข้อมูลได้");
-      } finally {
-        setLoading(false);
+      // Fetch user profile, products, and messages
+      const userRes = await axios.get(`${API_URL}/api/users/${id}`);
+      setProfile(userRes.data.user);
+      setProducts(userRes.data.products || []);
+      setMessages(userRes.data.messages || []);
+
+      // Fetch reviews
+      const token = localStorage.getItem("token");
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`, config);
+
+      // ตรวจสอบว่าเป็น array หรือ object เดียว
+      let reviewsData = [];
+      if (Array.isArray(reviewRes.data.reviews)) {
+        reviewsData = reviewRes.data.reviews;
+      } else if (reviewRes.data.reviews) {
+        reviewsData = [reviewRes.data.reviews]; // แปลง object เป็น array
       }
-    };
-    fetchData();
-  }, [id]);
+
+      setReviews(reviewsData);
+
+      // อัปเดต profile ด้วยค่า rating
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              averageRating: reviewRes.data.averageRating || prev.averageRating,
+              reviewCount: reviewRes.data.reviewCount || prev.reviewCount,
+            }
+          : prev
+      );
+    } catch (err: any) {
+      console.error("Fetch profile look error:", err);
+      setError(err.response?.data?.message || "ไม่สามารถโหลดข้อมูลได้");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [id]);
+
 
   const getAvatarUrl = (user: {
     avatar?: string;
@@ -706,7 +708,7 @@ useEffect(() => {
             </div>
           ) : (
             <div className="space-y-4">
-             {reviews && reviews.length > 0 ? (
+          {reviews && reviews.length > 0 ? (
   getSortedReviews().map((review) => (
     <div key={review._id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
@@ -754,6 +756,7 @@ useEffect(() => {
     <p className="text-sm">ผู้ใช้คนนี้ยังไม่ได้รับรีวิวใดๆ</p>
   </div>
 )}
+
             </div>
           )}
         </div>
