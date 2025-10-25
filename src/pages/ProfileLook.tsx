@@ -100,7 +100,7 @@ const ProfileLook: React.FC = () => {
   const [reportReason, setReportReason] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.cosm";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
 
   useEffect(() => {
     const fetchData = async () => {
