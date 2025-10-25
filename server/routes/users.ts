@@ -404,7 +404,7 @@ router.get('/:id', async (req: any, res: any) => {
       }, 
       products, 
       messages,
-      reviews 
+      reviews // ✅ เพิ่ม
     });
   } catch (error) {
     console.error('Get user by ID error:', error);
