@@ -433,7 +433,7 @@ const handleMarkAsSold = async (listingId: string) => {
   }, [activeTab, user]); // Depend on activeTab and user (re-fetching on tab change)
 
   const handleDeleteListing = async (listingId: string) => {
-    if (!window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?')) return;
+    if (!window.confirm('คุณแน่ใจหรือไม่ ว่าต้องการลบสินค้านี้? คะแนนรีวิวจะหายไปด้วย')) return;
     try {
       setError(null);
       const token = localStorage.getItem('token');
@@ -509,7 +509,7 @@ const handleMarkAsSold = async (listingId: string) => {
   };
 
   const handleDeleteMessage = async (messageId: string) => {
-    if (!window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อความนี้?')) return;
+    if (!window.confirm('คุณแน่ใจหรือไม่ ว่าต้องการลบข้อความนี้?')) return;
     try {
       const token = localStorage.getItem('token');
       const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
