@@ -1159,7 +1159,7 @@ export default function ProductDetail() {
         
         // ✅ บันทึกยอดเข้าชม
         try {
-          await axios.post(`${API_URL}/api/products /${id}/view`);
+          await axios.post(`${API_URL}/api/products/${id}/view`);
         } catch (viewErr) {
           console.error("View tracking error:", viewErr);
           // ไม่ต้อง throw error เพราะไม่สำคัญมาก
