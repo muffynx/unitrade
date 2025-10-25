@@ -100,7 +100,7 @@ const ProfileLook: React.FC = () => {
   const [reportReason, setReportReason] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.cosm";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,7 +117,10 @@ const ProfileLook: React.FC = () => {
         setProfile(res.data.user);
         setProducts(res.data.products || []);
         setMessages(res.data.messages || []);
-        setReviews(res.data.reviews || []); // ✅ เพิ่ม
+
+
+        const reviewRes = await axios.get(`/api/reviews/user/${id}`);
+        setReviews(reviewRes.data.reviews);
       } catch (err: any) {
         console.error("Fetch profile look error:", err);
         setError(err.response?.data?.message || "ไม่สามารถโหลดข้อมูลได้");
