@@ -119,7 +119,8 @@ const ProfileLook: React.FC = () => {
         setMessages(res.data.messages || []);
 
 
-        const reviewRes = await axios.get(`/api/reviews/user/${id}`);
+      const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`);
+
         setReviews(reviewRes.data.reviews);
       } catch (err: any) {
         console.error("Fetch profile look error:", err);
