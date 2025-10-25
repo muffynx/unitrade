@@ -1,4 +1,3 @@
-
 // src/pages/ProfileLook.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -17,8 +16,8 @@ interface UserProfile {
   phone?: string;
   university?: string;
   createdAt?: string;
-  averageRating: number;
-  reviewCount: number;
+  averageRating: number; // ✅ เพิ่ม
+  reviewCount: number; // ✅ เพิ่ม
 }
 
 interface Product {
@@ -90,8 +89,8 @@ const ProfileLook: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [messages, setMessages] = useState<MessageItem[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [activeTab, setActiveTab] = useState<"products" | "messages" | "reviews">("products");
+  const [reviews, setReviews] = useState<Review[]>([]); // ✅ เพิ่ม
+  const [activeTab, setActiveTab] = useState<"products" | "messages" | "reviews">("products"); // ✅ เพิ่ม reviews
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"latest" | "oldest" | "popular" | "price-low" | "price-high">("latest");
@@ -105,36 +104,20 @@ const ProfileLook: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!id) {
-        setError("ไม่พบรหัสผู้ใช้");
-        setLoading(false);
-        return;
-      }
-
+      if (!id) return;
       try {
         setLoading(true);
         setError(null);
+        const res = await axios.get(`${API_URL}/api/users/${id}`);
+        console.log('API Response (Reviews):', res.data.reviews); // ✅ Debug
+        console.log('Calling API:', `${API_URL}/api/users/${id}`); // ✅ Debug URL
 
-        // Fetch user profile, products, and messages
-        const userRes = await axios.get(`${API_URL}/api/users/${id}`);
-        console.log('User API Response:', userRes.data); // ✅ Debug user response
-        setProfile(userRes.data.user);
-        setProducts(userRes.data.products || []);
-        setMessages(userRes.data.messages || []);
-
-        // Fetch reviews
-        const token = localStorage.getItem("token");
-        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-        const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`, config);
-        console.log('Review API Response:', reviewRes.data); // ✅ Debug reviews response
-        setReviews(reviewRes.data.reviews || []);
-        // Optionally update profile with averageRating and reviewCount from review endpoint
-        setProfile((prev) => prev ? {
-          ...prev,
-          averageRating: reviewRes.data.averageRating || prev.averageRating,
-          reviewCount: reviewRes.data.reviewCount || prev.reviewCount
-        } : prev);
-
+      console.log('Full API Response:', res.data); // ✅ Debug response เต็ม
+      console.log('API Response (Reviews):', res.data.reviews); // ✅ Debug reviews
+        setProfile(res.data.user);
+        setProducts(res.data.products || []);
+        setMessages(res.data.messages || []);
+        setReviews(res.data.reviews || []); // ✅ เพิ่ม
       } catch (err: any) {
         console.error("Fetch profile look error:", err);
         setError(err.response?.data?.message || "ไม่สามารถโหลดข้อมูลได้");
@@ -207,11 +190,10 @@ const ProfileLook: React.FC = () => {
     }
   };
 
-  const getSortedReviews = () => {
-    return [...reviews].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  };
+const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+
+  
 
   const handleShareProfile = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -265,7 +247,7 @@ const ProfileLook: React.FC = () => {
     products.reduce((sum, p) => sum + p.favorites.length, 0) +
     messages.reduce((sum, m) => sum + m.likes.length, 0);
 
-  if (loading) {
+    if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="animate-pulse space-y-6">
@@ -694,66 +676,78 @@ const ProfileLook: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
-              {reviews && reviews.length > 0 ? (
-                getSortedReviews().map((review) => (
-                  <div
-                    key={review._id}
-                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start gap-3">
-                      {/* Reviewer Image */}
-                      <div className="flex-shrink-0">
-                        {review.reviewerId.profileImage ? (
-                          <img
-                            src={review.reviewerId.profileImage}
-                            alt={review.reviewerId.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <User size={20} className="text-blue-600" />
-                          </div>
-                        )}
-                      </div>
+<div className="space-y-4">
+  {reviews && reviews.length > 0 ? (
+    getSortedReviews().map((review) => (
+      <div
+        key={review._id}
+        className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+      >
+        <div className="flex items-start gap-3">
+          {/* Reviewer Image */}
+          <div className="flex-shrink-0">
+            {review.reviewerId.profileImage ? (
+              <img
+                src={review.reviewerId.profileImage}
+                alt={review.reviewerId.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <User size={20} className="text-blue-600" />
+              </div>
+            )}
+          </div>
 
-                      {/* Review Content */}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <p className="font-medium text-sm">{review.reviewerId.name}</p>
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                size={16}
-                                className={`${
-                                  star <= review.rating
-                                    ? 'text-yellow-400 fill-current'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">{formatTime(review.createdAt)}</p>
-                        <p className="text-sm text-gray-700 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 break-words">
-                          {review.comment || "ไม่มีความคิดเห็น"}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          สินค้า: <span className="font-medium">{review.productId.title}</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <Star size={48} className="mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-medium">ยังไม่มีรีวิว</p>
-                  <p className="text-sm">ผู้ใช้คนนี้ยังไม่ได้รับรีวิวใดๆ</p>
-                </div>
-              )}
+          {/* Review Content */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              {/* Reviewer Name */}
+              <p className="font-medium text-sm">{review.reviewerId.name}</p>
+              
+              {/* Star Rating */}
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={16}
+                    className={`${
+                      star <= review.rating
+                        ? 'text-yellow-400 fill-current'
+                        : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
+
+            {/* Review Date */}
+            <p className="text-xs text-gray-500 mt-1">{formatTime(review.createdAt)}</p>
+
+            {/* Comment Box */}
+            <p className="text-sm text-gray-700 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 break-words">
+              {review.comment || "ไม่มีความคิดเห็น"}
+            </p>
+
+            {/* Product Name */}
+            <p className="text-xs text-gray-500 mt-2">
+              สินค้า: <span className="font-medium">{review.productId.title}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    ))
+  ) : (
+    <div className="text-center py-12 text-gray-500">
+      <Star size={48} className="mx-auto mb-4 text-gray-300" />
+      <p className="text-lg font-medium">ยังไม่มีรีวิว</p>
+      <p className="text-sm">ผู้ใช้คนนี้ยังไม่ได้รับรีวิวใดๆ</p>
+    </div>
+  )}
+</div>
+
+
+
           )}
         </div>
       </div>

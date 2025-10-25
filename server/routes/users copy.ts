@@ -371,41 +371,45 @@ router.delete('/profile', authenticateToken, async (req: any, res: any) => {
   }
 });
 
-// server/routes/users.ts
+// Get user by ID (MUST BE LAST!)
 router.get('/:id', async (req: any, res: any) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
     }
-
+    
     if (!user.profileImage) {
       user.profileImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=128`;
     }
-
+    
     const products = await Product.find({ user: req.params.id })
       .sort({ createdAt: -1 })
       .limit(20);
-
+      
     const messages = await Message.find({ user: req.params.id, status: 'active' })
       .sort({ createdAt: -1 })
       .limit(20);
+      
+    const reviews = await Review.find({ recipientId: req.params.id })
+      .populate("reviewerId", "name profileImage")
+      .populate("productId", "title images")
+      .sort({ createdAt: -1 });
 
-    res.json({
+    res.json({ 
       user: {
         ...user.toJSON(),
         averageRating: user.averageRating || 0,
         reviewCount: user.reviewCount || 0
-      },
-      products,
-      messages
-      // ❌ ไม่ต้องส่ง reviews แล้ว
+      }, 
+      products, 
+      messages,
+      reviews // ✅ เพิ่ม
     });
   } catch (error) {
     console.error('Get user by ID error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดของเซิร์ฟเวอร์' });
   }
 });
-
 
 export default router;
