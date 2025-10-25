@@ -248,7 +248,7 @@ const ProductCreate: React.FC<ProductCreateProps> = ({ onClose, onSuccess }) => 
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-semibold mb-2">{t('label_price', { currency: '$' })} *</label>
+            <label className="block text-gray-700 font-semibold mb-2">{t('label_price', { currency: '฿' })} *</label>
             <input
               type="number"
               value={price}

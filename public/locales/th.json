@@ -147,7 +147,7 @@
   "post_message.description_placeholder": "ระบุรายละเอียดสินค้าที่ต้องการ สภาพ สี ฯลฯ",
 
   "post_message.location_label": "สถานที่",
-  "post_message.location_placeholder": "วิทยาเขต/พื้นที่ของคุณ (เช่น มข., มจพ.)",
+  "post_message.location_placeholder": "วิทยาเขต/พื้นที่ของคุณ (เช่น มข.)",
 
   "post_message.budget_label": "งบประมาณ (บาท)",
   "post_message.budget_placeholder": "ไม่บังคับ (เช่น 5000)",
