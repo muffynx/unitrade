@@ -156,7 +156,14 @@ useEffect(() => {
 
   fetchData();
 }, [id]);
-
+useEffect(() => {
+  console.log("🔹 Reviews state updated:", reviews);
+  console.log("Is array?", Array.isArray(reviews));
+  console.log("Length:", reviews?.length);
+  if (Array.isArray(reviews) && reviews.length > 0) {
+    console.log("First review:", reviews[0]);
+  }
+}, [reviews]);
 
   const getAvatarUrl = (user: {
     avatar?: string;
