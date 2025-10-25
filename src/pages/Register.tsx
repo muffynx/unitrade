@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AiOutlineClose, AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { IoCheckmarkCircle, IoAlertCircle, IoShieldCheckmark } from "react-icons/io5"; // ยังคงใช้ไอคอนใหม่
-import "./style/Loginstyle.css"; // Assumes this path is correct
+import { IoCheckmarkCircle, IoAlertCircle, IoShieldCheckmark } from "react-icons/io5";
+import "./style/Loginstyle.css"; 
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -54,6 +54,22 @@ const Register = () => {
       return;
     }
 
+    // ✅ === START: KKUMAIL VALIDATION ===
+    // แปลงอีเมลเป็นตัวพิมพ์เล็กและตัดช่องว่าง
+    const lowerEmail = email.toLowerCase().trim();
+
+    // ตรวจสอบว่าลงท้ายด้วย @kkumail.com หรือไม่
+    if (!lowerEmail.endsWith('@kkumail.com')) {
+      // (หมายเหตุ: หากต้องการรับ @kku.ac.th ด้วย ให้เปลี่ยนเงื่อนไขเป็น)
+      // if (!lowerEmail.endsWith('@kkumail.com') && !lowerEmail.endsWith('@kku.ac.th')) {
+      
+      setError("โปรดใช้อีเมลของมหาวิทยาลัยที่ถูกต้อง (@kkumail.com)");
+      setIsLoading(false);
+      return;
+    }
+    // ✅ === END: KKUMAIL VALIDATION ===
+
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
@@ -62,7 +78,7 @@ const Register = () => {
 
     if (!passwordStrength.hasLength || !passwordStrength.hasUpper || 
         !passwordStrength.hasLower || !passwordStrength.hasNumber) {
-      setError("Password doesn't meet security requirements (min 8 chars, UL, LL, number)");
+      setError("รหัสผ่านไม่ตรงตามข้อกำหนดด้านความปลอดภัย (อย่างน้อย 8 ตัวอักษร, ตัวเล็ก, ตัวใหญ่, ตัวเลข)");
       setIsLoading(false);
       return;
     }
@@ -75,7 +91,7 @@ const Register = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          email: email.toLowerCase().trim(), 
+          email: lowerEmail, // ✅ ใช้ lowerEmail ที่ผ่านการตรวจสอบแล้ว
           password, 
           name: name.trim(), 
           studentId: studentId.trim() 
@@ -89,7 +105,7 @@ const Register = () => {
         setLoadingMessage("Redirecting...");
         
         setTimeout(() => {
-          navigate("/login", { state: { registeredEmail: email.toLowerCase().trim() } });
+          navigate("/login", { state: { registeredEmail: lowerEmail } }); // ✅ ใช้ lowerEmail
         }, 1500);
       } else {
         const field = data.field || 'general';
@@ -109,7 +125,7 @@ const Register = () => {
   return (
     <div className="login-container">
       
-      {/* Close Button (Already exists in your CSS) */}
+      {/* Close Button */}
       <button 
         onClick={() => navigate("/browse")}
         className="login-close-btn"
@@ -118,9 +134,9 @@ const Register = () => {
         <AiOutlineClose className="login-close-icon" />
       </button>
 
-      {/* Left Side (Branding/Info - Uses your existing CSS) */}
+      {/* Left Side */}
       <div className="login-left-side">
-        <h1 className="login-welcome-text">Create Account</h1> {/* Position changed via CSS now */}
+        <h1 className="login-welcome-text">Create Account</h1> 
         
         <div className="login-title-container">
           <IoShieldCheckmark size={60} style={{ color: 'white', marginBottom: '15px' }}/>
@@ -128,7 +144,6 @@ const Register = () => {
           <h2 className="login-subtitle">Campus Marketplace</h2>
         </div>
         
-        {/* Adjusted Description Box content for better placement */}
         <div className="login-description-box" style={{ position: 'relative', padding: 0 }}>
           <p className="login-description" style={{ maxWidth: '300px' }}>
             สร้างบัญชีและเข้าร่วมตลาดซื้อขายของนักศึกษามหาวิทยาลัย 
@@ -138,7 +153,7 @@ const Register = () => {
 
       </div>
 
-      {/* Right Side (Form - Uses your existing CSS) */}
+      {/* Right Side (Form) */}
       <div className="login-right-side">
         <div className="login-form-container">
           <div className="login-form-header">
@@ -146,7 +161,7 @@ const Register = () => {
             <p className="login-form-subtitle">Join the UniTrade community</p>
           </div>
 
-          {/* Error Message (Uses your existing login-error CSS) */}
+          {/* Error Message */}
           {error && (
             <div className="login-error">
               <IoAlertCircle className="login-error-icon" />
@@ -154,7 +169,7 @@ const Register = () => {
             </div>
           )}
 
-          {/* Success Message (Requires new login-success CSS) */}
+          {/* Success Message */}
           {successMessage && !isLoading && (
             <div className="login-success">
               <IoCheckmarkCircle className="login-error-icon" style={{ fill: 'currentColor' }} />
@@ -184,7 +199,7 @@ const Register = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your university email"
+                placeholder="Enter your university email (@kkumail.com)" // ✅ อัปเดต placeholder
                 className="login-input"
                 required
                 disabled={isLoading}
@@ -233,7 +248,7 @@ const Register = () => {
                 </button>
               </div>
 
-              {/* Password Strength Indicator (Needs accompanying CSS) */}
+              {/* Password Strength Indicator */}
               {password && (
                 <div className="password-requirements" style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}>
                   <div className={passwordStrength.hasLength ? 'req-met' : 'req-unmet'}>

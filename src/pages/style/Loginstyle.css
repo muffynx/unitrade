@@ -424,8 +424,7 @@
     }
     
     .login-left-side {
-        min-height: auto;
-        padding: 2rem 1rem;
+        display: none; /* ✅ This hides the left panel */
     }
     
     .login-welcome-text {
@@ -489,7 +488,12 @@
         top: 0.75rem;
         right: 0.75rem;
         padding: 0.625rem;
+        
+        /* ✅ Added these lines for visibility on white bg */
+        background-color: #f0f0f0; 
+        color: #333;
     }
+
 }
 
 /* ==================== TABLET STYLES ==================== */
