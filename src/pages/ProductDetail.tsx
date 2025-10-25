@@ -516,24 +516,28 @@ useEffect(() => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
         const response = await axios.get(`${API_URL}/api/reviews/user/${product.user._id}`);
-        // console.log('User Reviews API Response:', response.data); // ✅ Debug (สามารถลบทิ้งได้)
         
-        // --- START FIX: คำนวณ Rating และ Count จาก List Reviews ---
+        // --- START FIX: คำนวณ Rating และ Count จาก List Reviews พร้อมการกรอง ---
         let reviewsData: any[] = []; 
         
-        // จัดการรูปแบบ Response ที่อาจเป็น Array ตรงๆ หรือ Nested Object
+        // จัดการรูปแบบ Response
         if (Array.isArray(response.data)) {
           reviewsData = response.data;
         } else if (response.data && Array.isArray(response.data.reviews)) {
           reviewsData = response.data.reviews;
         } 
         
-        const calculatedReviewCount = reviewsData.length;
+        // **✅ เพิ่ม: กรองรีวิวที่สินค้าถูกลบ (productId เป็น null หรือไม่มี _id)**
+        const filteredReviewsData = reviewsData.filter(
+            (review) => review.productId && review.productId._id
+        );
+        
+        const calculatedReviewCount = filteredReviewsData.length;
         let calculatedAverageRating = 0;
         
         if (calculatedReviewCount > 0) {
-            // คำนวณผลรวม Rating และหาค่าเฉลี่ย
-            const totalRating = reviewsData.reduce((sum, review) => sum + (review.rating || 0), 0);
+            // คำนวณผลรวม Rating และหาค่าเฉลี่ยจากข้อมูลที่กรองแล้ว
+            const totalRating = filteredReviewsData.reduce((sum, review) => sum + (review.rating || 0), 0);
             calculatedAverageRating = totalRating / calculatedReviewCount;
         }
         
