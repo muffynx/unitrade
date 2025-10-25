@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react"; // ✅ Import useMemo
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Clock,
@@ -14,6 +14,9 @@ import { formatDistanceToNow } from "date-fns";
 import { th, enUS } from "date-fns/locale";
 import '../i18n';
 import { useTranslation } from 'react-i18next';
+
+// ... (Interface Listing, getAvatarUrl, categoryKeyMap, categories, 
+//      getCategoryColor, getDisplayCategory functions remain the same) ...
 
 interface Listing {
     id: string;
@@ -33,13 +36,11 @@ interface Listing {
     sold?: boolean;
 }
 
-// ✅ Helper function to get avatar URL
 const getAvatarUrl = (user: { name: string; avatar?: string; profileImage?: string }) => {
     return user.profileImage || user.avatar || 
            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=64`;
 };
 
-// Category mapping
 const categoryKeyMap: Record<string, string> = {
     "all": "category_all_items",
     "electronics": "category_electronics",
@@ -72,6 +73,7 @@ const getDisplayCategory = (cat: string, t: (key: string) => string) => {
     return t(key);
 };
 
+
 const Listings = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
@@ -83,10 +85,13 @@ const Listings = () => {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     
-    // ตั้งค่าเริ่มต้นจาก URL
     const initialCategoryFromUrl = new URLSearchParams(location.search).get('category')?.toLowerCase() || "all";
     const [selectedCategory, setSelectedCategory] = useState(initialCategoryFromUrl); 
     const [sortBy, setSortBy] = useState("newest");
+
+    // ✅ State สำหรับ Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 20; // ⭐️ ตั้งค่าเป็น 20 รายการตามที่ขอ
 
     const formatTime = (dateString: string) => {
         const locale = i18n.language === 'th' ? th : enUS;
@@ -97,6 +102,7 @@ const Listings = () => {
     };
 
     const fetchListings = useCallback(async () => {
+        // ... (fetchListings function remains the same) ...
         try {
             setLoading(true);
             setError(null);
@@ -143,44 +149,67 @@ const Listings = () => {
         }
     }, [location.search, fetchListings]);
 
+    // ✅ Reset page to 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedCategory, sortBy]);
+
     const goToProductDetail = (productId: string) => {
         navigate(`/product/${productId}`);
     };
 
-    // ฟังก์ชันสำหรับอัปเดต URL เมื่อเปลี่ยน Category
     const handleCategoryChange = (category: string) => {
         setSelectedCategory(category);
         const newCategoryParam = category === 'all' ? '' : `?category=${category}`;
         navigate(`/listings${newCategoryParam}`, { replace: true });
     };
 
-    // Filter and sort listings
-    const filteredListings = listings
-        .filter(item => {
-            const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                item.description.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory = selectedCategory === "all" || item.category === selectedCategory; 
-            const matchesSoldStatus = !item.sold;
-            // กรองไม่ให้แสดงสินค้าของ Admin
-            const isStudentProduct = item.user && item.user.name !== "Admin"; 
-            return matchesSearch && matchesCategory && matchesSoldStatus && isStudentProduct;
-        })
-        .sort((a, b) => {
-            switch (sortBy) {
-                case "newest":
-                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-                case "oldest":
-                    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-                case "price-high":
-                    return b.price - a.price;
-                case "price-low":
-                    return a.price - b.price;
-                default:
-                    return 0;
-            }
-        });
+    // ✅ Wrapped in useMemo for performance
+    const filteredListings = useMemo(() => {
+        return listings
+            .filter(item => {
+                const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    item.description.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesCategory = selectedCategory === "all" || item.category === selectedCategory; 
+                const matchesSoldStatus = !item.sold;
+                const isStudentProduct = item.user && item.user.name !== "Admin"; 
+                return matchesSearch && matchesCategory && matchesSoldStatus && isStudentProduct;
+            })
+            .sort((a, b) => {
+                switch (sortBy) {
+                    case "newest":
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    case "oldest":
+                        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                    case "price-high":
+                        return b.price - a.price;
+                    case "price-low":
+                        return a.price - b.price;
+                    default:
+                        return 0;
+                }
+            });
+    }, [listings, searchTerm, selectedCategory, sortBy]); // ✅ Dependencies
+
+    // ✅ คำนวณจำนวนหน้าทั้งหมด
+    const totalPages = Math.ceil(filteredListings.length / ITEMS_PER_PAGE);
+
+    // ✅ paginatedListings: ตัดข้อมูลเฉพาะหน้าปัจจุบัน
+    const paginatedListings = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return filteredListings.slice(startIndex, endIndex);
+    }, [filteredListings, currentPage]);
+
+    // ✅ ฟังก์ชันสำหรับเปลี่ยนหน้า
+    const handlePageChange = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     if (loading) {
+        // ... (Loading UI remains the same) ...
         return (
             <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="text-center py-20">
@@ -193,7 +222,7 @@ const Listings = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
-            {/* Header */}
+            {/* Header (remains the same) */}
             <div className="flex items-center gap-4 mb-6">
                 <button
                     onClick={() => navigate(-1)}
@@ -208,7 +237,7 @@ const Listings = () => {
                 </div>
             </div>
 
-            {/* Search and Filters Card */}
+            {/* Search and Filters Card (remains the same) */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm mb-8">
                 <div className="flex flex-col md:flex-row gap-4">
                     {/* Search */}
@@ -222,7 +251,6 @@ const Listings = () => {
                             className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                         />
                     </div>
-
                     {/* Filters Group */}
                     <div className="flex gap-4">
                         {/* Category Filter Dropdown */}
@@ -239,7 +267,6 @@ const Listings = () => {
                                 ))}
                             </select>
                         </div>
-                        
                         {/* Sort Dropdown */}
                         <div className="relative">
                             <select
@@ -255,11 +282,9 @@ const Listings = () => {
                         </div>
                     </div>
                 </div>
-
-                
             </div>
 
-            {/* Error Message */}
+            {/* Error Message (remains the same) */}
             {error && (
                 <div className="text-center py-8 bg-red-50 border border-red-200 rounded-xl mb-8">
                     <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
@@ -274,7 +299,8 @@ const Listings = () => {
             )}
 
             {/* Listings Grid */}
-            {filteredListings.length === 0 ? (
+            {/* ✅ Check filteredListings.length for empty state */}
+            {!error && filteredListings.length === 0 ? (
                 <div className="text-center py-20 bg-gray-50 rounded-xl">
                     <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Search className="h-10 w-10 text-gray-500" />
@@ -295,68 +321,93 @@ const Listings = () => {
                     )}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredListings.map((item) => (
-                        <div
-                            key={item.id}
-                            className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
-                            onClick={() => goToProductDetail(item.id)}
-                        >
-                            <div className="relative aspect-video">
-                                <img
-                                    src={item.images[0] || "https://via.placeholder.com/400x300?text=No+Image"}
-                                    alt={item.title}
-                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                    onError={(e) => {
-                                        e.currentTarget.src = "https://via.placeholder.com/400x300?text=Image+Error";
-                                    }}
-                                />
-                                <span
-                                    className={`absolute top-3 left-3 px-3 py-1 text-xs font-semibold rounded-full text-white shadow-md ${getCategoryColor(item.category)}`}
-                                >
-                                    {getDisplayCategory(item.category, t)}
-                                </span>
-                            </div>
+                <> {/* ✅ Added Fragment */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {/* ✅ Loop over paginatedListings instead */}
+                        {paginatedListings.map((item) => (
+                            <div
+                                key={item.id}
+                                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                                onClick={() => goToProductDetail(item.id)}
+                            >
+                                <div className="relative aspect-video">
+                                    <img
+                                        src={item.images[0] || "https://via.placeholder.com/400x300?text=No+Image"}
+                                        alt={item.title}
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        onError={(e) => {
+                                            e.currentTarget.src = "https://via.placeholder.com/400x300?text=Image+Error";
+                                        }}
+                                    />
+                                    <span
+                                        className={`absolute top-3 left-3 px-3 py-1 text-xs font-semibold rounded-full text-white shadow-md ${getCategoryColor(item.category)}`}
+                                    >
+                                        {getDisplayCategory(item.category, t)}
+                                    </span>
+                                </div>
 
-                            <div className="p-4">
-                                <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 transition-colors group-hover:text-blue-600">
-                                    {item.title}
-                                </h3>
-                                
-                                <p className="text-2xl font-extrabold text-blue-600 my-2">
-                                    {item.price.toLocaleString()} {t('currency_unit')}
-                                </p>
-                                
-                                <div className="flex flex-col text-xs text-gray-500 border-t border-gray-100 pt-3 mt-3 space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={14} className="flex-shrink-0 text-gray-400" />
-                                        <span className="truncate">{item.location}</span>
-                                    </div>
+                                <div className="p-4">
+                                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-2 transition-colors group-hover:text-blue-600">
+                                        {item.title}
+                                    </h3>
                                     
-                                    <div className="flex items-center justify-between">
-                                        {/* ✅ แสดง Avatar ของผู้ขาย */}
+                                    <p className="text-2xl font-extrabold text-blue-600 my-2">
+                                        {item.price.toLocaleString()} {t('currency_unit')}
+                                    </p>
+                                    
+                                    <div className="flex flex-col text-xs text-gray-500 border-t border-gray-100 pt-3 mt-3 space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <img
-                                                src={getAvatarUrl(item.user)}
-                                                alt={item.user.name}
-                                                className="w-5 h-5 rounded-full object-cover border border-gray-200"
-                                                onError={(e) => {
-                                                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.user.name)}&background=random&size=64`;
-                                                }}
-                                            />
-                                            <span className="truncate">{item.user.name}</span>
+                                            <MapPin size={14} className="flex-shrink-0 text-gray-400" />
+                                            <span className="truncate">{item.location}</span>
                                         </div>
                                         
-                                        <div className="flex items-center gap-1 text-right">
-                                            <Clock size={14} className="flex-shrink-0 text-gray-400" />
-                                            <span>{formatTime(item.createdAt)}</span>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <img
+                                                    src={getAvatarUrl(item.user)}
+                                                    alt={item.user.name}
+                                                    className="w-5 h-5 rounded-full object-cover border border-gray-200"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.user.name)}&background=random&size=64`;
+                                                    }}
+                                                />
+                                                <span className="truncate">{item.user.name}</span>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-1 text-right">
+                                                <Clock size={14} className="flex-shrink-0 text-gray-400" />
+                                                <span>{formatTime(item.createdAt)}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+
+                    {/* ✅ ส่วนควบคุม Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {t('pagination_previous', 'Previous')}
+                            </button>
+                            <span className="text-sm text-gray-700">
+                                {t('pagination_page', 'Page')} {currentPage} {t('pagination_of', 'of')} {totalPages}
+                            </span>
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {t('pagination_next', 'Next')}
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
         </div>
     );
