@@ -117,13 +117,7 @@ const ProfileLook: React.FC = () => {
         setProfile(res.data.user);
         setProducts(res.data.products || []);
         setMessages(res.data.messages || []);
-
-
-      const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`);
-console.log("Calling Review API:", `${API_URL}/api/reviews/user/${id}`);
-console.log("Review Response:", reviewRes.data);
-
-        setReviews(reviewRes.data.reviews);
+        setReviews(res.data.reviews || []); // ✅ เพิ่ม
       } catch (err: any) {
         console.error("Fetch profile look error:", err);
         setError(err.response?.data?.message || "ไม่สามารถโหลดข้อมูลได้");
@@ -751,7 +745,6 @@ const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).
     </div>
   )}
 </div>
-
 
 
 
