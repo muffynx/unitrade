@@ -25,7 +25,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ✅ trust proxy (สำหรับ Render / Vercel)
-app.set("trust proxy", 1);
+app.set('trust proxy', 1);
 
 // ✅ Security middleware
 app.use(helmet());

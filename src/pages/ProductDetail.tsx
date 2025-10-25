@@ -1153,7 +1153,7 @@ export default function ProductDetail() {
     window.scrollTo(0, 0);
     const fetchProduct= async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
         const response = await axios.get(`${API_URL}/api/product/${id}`);
         setProduct(response.data);
         
