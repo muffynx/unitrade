@@ -150,13 +150,13 @@ const Browse = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
       const response = await axios.get(`${API_URL}/api/product`);
 
       // ✅ แก้ไข mapping ให้รองรับ profileImage
       const products = response.data.map((product: any) => {
         // 🔍 Debug: ดูข้อมูล user ที่ได้รับ
-
 
         return {
           id: product._id,
@@ -189,7 +189,6 @@ const Browse = () => {
         };
       });
 
-   
       setListings(products);
     } catch (err: any) {
       setError(err.message || t("fetch_listings_error"));
@@ -201,7 +200,8 @@ const Browse = () => {
 
   const fetchMessages = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL =
+        import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
       const response = await axios.get(`${API_URL}/api/messages`);
 
       const msgs = response.data.map((msg: any) => ({
@@ -285,7 +285,7 @@ const Browse = () => {
       case "textbooks":
         return "bg-green-500";
       case "furniture":
-        case "general":
+      case "general":
         return "bg-blue-400";
       case "unknown":
         return "bg-yellow-500";

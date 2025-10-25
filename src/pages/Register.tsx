@@ -85,7 +85,7 @@ const Register = () => {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
       const res = await fetch(`${API_URL}/api/auth/send-register-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,7 +120,7 @@ const Register = () => {
     }
 
     try {
-        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        const API_URL = import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
         const res = await fetch(`${API_URL}/api/auth/verify-register-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -172,7 +172,7 @@ const Register = () => {
 
     try {
       setMainSuccess("Creating your account...");
-      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+      const API_URL = import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
       
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",

@@ -586,7 +586,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
 
       await axios.delete(`${API_URL}/api/messages/${messageId}`, {
         headers: { Authorization: `Bearer ${token}` },

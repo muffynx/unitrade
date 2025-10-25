@@ -50,31 +50,50 @@ type CategoryFilter = "all" | string;
 const getUrgencyLabel = (urgency: string) => {
   switch (urgency) {
     case "high":
-      return { label: "ด่วนมาก", color: "bg-red-100 border-red-300 text-red-800" };
+      return {
+        label: "ด่วนมาก",
+        color: "bg-red-100 border-red-300 text-red-800",
+      };
     case "medium":
-      return { label: "ปานกลาง", color: "bg-yellow-100 border-yellow-300 text-yellow-800" };
+      return {
+        label: "ปานกลาง",
+        color: "bg-yellow-100 border-yellow-300 text-yellow-800",
+      };
     case "low":
-      return { label: "ไม่รีบ", color: "bg-green-100 border-green-300 text-green-800" };
+      return {
+        label: "ไม่รีบ",
+        color: "bg-green-100 border-green-300 text-green-800",
+      };
     default:
-      return { label: "ไม่ระบุ", color: "bg-gray-100 border-gray-300 text-gray-800" };
+      return {
+        label: "ไม่ระบุ",
+        color: "bg-gray-100 border-gray-300 text-gray-800",
+      };
   }
 };
 
 export default function AdminMessages() {
-  const [activePage, setActivePage] = useState<"dashboard" | "users" | "messages">("messages");
+  const [activePage, setActivePage] = useState<
+    "dashboard" | "users" | "messages"
+  >("messages");
   const [messages, setMessages] = useState<MessageAdmin[]>([]);
   const [filteredMessages, setFilteredMessages] = useState<MessageAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(
+    null
+  );
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [selectedMessage, setSelectedMessage] = useState<MessageAdmin | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<MessageAdmin | null>(
+    null
+  );
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
   const token = localStorage.getItem("adminToken");
 
   // Toast Notification
@@ -175,7 +194,11 @@ export default function AdminMessages() {
   };
 
   // ลบข้อความ + แจ้งผู้ใช้
-  const handleDelete = async (messageId: string, ownerId: string, messageTitle: string) => {
+  const handleDelete = async (
+    messageId: string,
+    ownerId: string,
+    messageTitle: string
+  ) => {
     if (
       !confirm(
         `คุณแน่ใจหรือไม่ว่าต้องการลบข้อความ "${messageTitle}"?\n\nผู้ใช้จะได้รับการแจ้งเตือนผ่านระบบแชท`
@@ -214,7 +237,10 @@ export default function AdminMessages() {
       setShowDetailModal(false);
 
       if (notificationSent) {
-        showToast(`ลบข้อความ "${messageTitle}" สำเร็จและแจ้งผู้ใช้แล้ว`, "success");
+        showToast(
+          `ลบข้อความ "${messageTitle}" สำเร็จและแจ้งผู้ใช้แล้ว`,
+          "success"
+        );
       } else {
         showToast(`ลบข้อความ "${messageTitle}" สำเร็จ`, "success");
       }
@@ -245,7 +271,10 @@ export default function AdminMessages() {
     medium: messages.filter((m) => m.urgency === "medium").length,
     low: messages.filter((m) => m.urgency === "low").length,
     totalViews: messages.reduce((sum, msg) => sum + msg.views, 0),
-    totalComments: messages.reduce((sum, msg) => sum + (msg.comments?.length || 0), 0),
+    totalComments: messages.reduce(
+      (sum, msg) => sum + (msg.comments?.length || 0),
+      0
+    ),
   };
 
   return (
@@ -254,15 +283,22 @@ export default function AdminMessages() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">จัดการข้อความ (Posts)</h1>
-            <p className="text-gray-500 mt-1">ตรวจสอบและจัดการข้อความจากผู้ใช้งาน</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              จัดการข้อความ (Posts)
+            </h1>
+            <p className="text-gray-500 mt-1">
+              ตรวจสอบและจัดการข้อความจากผู้ใช้งาน
+            </p>
           </div>
           <button
             onClick={handleRefresh}
             disabled={loading}
             className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm border border-gray-200 hover:shadow-md disabled:opacity-50 text-sm"
           >
-            <FaSyncAlt className={`${loading ? "animate-spin" : ""}`} size={16} />
+            <FaSyncAlt
+              className={`${loading ? "animate-spin" : ""}`}
+              size={16}
+            />
             {loading ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
           </button>
         </div>
@@ -274,7 +310,9 @@ export default function AdminMessages() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">ข้อความทั้งหมด</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.total}
+                </p>
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
                 <MessageCircle className="h-6 w-6 text-blue-600" />
@@ -298,7 +336,9 @@ export default function AdminMessages() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">ยอดวิวรวม</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.totalViews.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {stats.totalViews.toLocaleString()}
+                </p>
               </div>
               <div className="p-3 bg-purple-100 rounded-lg">
                 <FaEye className="h-6 w-6 text-purple-600" />
@@ -310,7 +350,9 @@ export default function AdminMessages() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">ความคิดเห็นรวม</p>
-                <p className="text-2xl font-bold text-green-600">{stats.totalComments.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.totalComments.toLocaleString()}
+                </p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <MessageCircle className="h-6 w-6 text-green-600" />
@@ -338,7 +380,9 @@ export default function AdminMessages() {
             {/* Urgency Filter */}
             <select
               value={urgencyFilter}
-              onChange={(e) => setUrgencyFilter(e.target.value as UrgencyFilter)}
+              onChange={(e) =>
+                setUrgencyFilter(e.target.value as UrgencyFilter)
+              }
               className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">ความเร่งด่วนทั้งหมด</option>
@@ -374,7 +418,9 @@ export default function AdminMessages() {
               <AlertCircle size={24} />
               <div>
                 <p className="font-medium">{error}</p>
-                <p className="text-sm text-red-500 mt-1">กรุณาลองใหม่อีกครั้ง</p>
+                <p className="text-sm text-red-500 mt-1">
+                  กรุณาลองใหม่อีกครั้ง
+                </p>
               </div>
             </div>
           ) : (
@@ -411,7 +457,10 @@ export default function AdminMessages() {
                     {filteredMessages.map((msg) => {
                       const urgency = getUrgencyLabel(msg.urgency);
                       return (
-                        <tr key={msg._id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={msg._id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4">
                             <div className="max-w-xs">
                               <div className="font-medium text-gray-900 line-clamp-2">
@@ -455,29 +504,39 @@ export default function AdminMessages() {
                             <div className="flex flex-col gap-1 text-xs text-gray-600">
                               <div className="flex items-center gap-1">
                                 <FaEye size={12} />
-                                <span className="font-medium">{msg.views.toLocaleString()} วิว</span>
+                                <span className="font-medium">
+                                  {msg.views.toLocaleString()} วิว
+                                </span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <MessageCircle size={12} />
-                                <span className="font-medium">{msg.comments?.length || 0} คอมเมนต์</span>
+                                <span className="font-medium">
+                                  {msg.comments?.length || 0} คอมเมนต์
+                                </span>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-1.5 text-xs text-gray-500">
                               <Calendar className="h-3 w-3" />
-                              {new Date(msg.createdAt).toLocaleDateString("th-TH", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
+                              {new Date(msg.createdAt).toLocaleDateString(
+                                "th-TH",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                }
+                              )}
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
                               <Clock className="h-3 w-3" />
-                              {new Date(msg.createdAt).toLocaleTimeString("th-TH", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(msg.createdAt).toLocaleTimeString(
+                                "th-TH",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -500,7 +559,9 @@ export default function AdminMessages() {
                         <td colSpan={7} className="px-6 py-12 text-center">
                           <div className="flex flex-col items-center justify-center">
                             <MessageCircle className="h-12 w-12 text-gray-400 mb-3" />
-                            <p className="text-gray-500 text-lg font-medium">ไม่พบข้อความ</p>
+                            <p className="text-gray-500 text-lg font-medium">
+                              ไม่พบข้อความ
+                            </p>
                             <p className="text-gray-400 text-sm mt-1">
                               ลองเปลี่ยนตัวกรองหรือคำค้นหา
                             </p>
@@ -548,24 +609,39 @@ export default function AdminMessages() {
                       {/* Meta Info */}
                       <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-600">
                         <div className="flex items-center gap-1.5">
-                          <Tag size={14} className="text-gray-400 flex-shrink-0" />
+                          <Tag
+                            size={14}
+                            className="text-gray-400 flex-shrink-0"
+                          />
                           <span className="truncate">{msg.category}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+                          <Calendar
+                            size={14}
+                            className="text-gray-400 flex-shrink-0"
+                          />
                           <span className="truncate">
-                            {new Date(msg.createdAt).toLocaleDateString("th-TH", {
-                              day: "numeric",
-                              month: "short",
-                            })}
+                            {new Date(msg.createdAt).toLocaleDateString(
+                              "th-TH",
+                              {
+                                day: "numeric",
+                                month: "short",
+                              }
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <FaEye size={12} className="text-gray-400 flex-shrink-0" />
+                          <FaEye
+                            size={12}
+                            className="text-gray-400 flex-shrink-0"
+                          />
                           <span>{msg.views.toLocaleString()} วิว</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <MessageCircle size={12} className="text-gray-400 flex-shrink-0" />
+                          <MessageCircle
+                            size={12}
+                            className="text-gray-400 flex-shrink-0"
+                          />
                           <span>{msg.comments?.length || 0} คอมเมนต์</span>
                         </div>
                       </div>
@@ -592,7 +668,9 @@ export default function AdminMessages() {
                   <div className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <MessageCircle className="h-12 w-12 text-gray-400 mb-3" />
-                      <p className="text-gray-500 text-lg font-medium">ไม่พบข้อความ</p>
+                      <p className="text-gray-500 text-lg font-medium">
+                        ไม่พบข้อความ
+                      </p>
                       <p className="text-gray-400 text-sm mt-1">
                         ลองเปลี่ยนตัวกรองหรือคำค้นหา
                       </p>
@@ -611,7 +689,9 @@ export default function AdminMessages() {
           <div className="bg-white rounded-xl w-full max-w-3xl max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10 rounded-t-xl">
-              <h3 className="text-xl font-semibold text-gray-900">รายละเอียดข้อความ</h3>
+              <h3 className="text-xl font-semibold text-gray-900">
+                รายละเอียดข้อความ
+              </h3>
               <button
                 onClick={() => setShowDetailModal(false)}
                 className="text-gray-400 p-2 rounded-full hover:bg-gray-100 hover:text-gray-600 transition-colors"
@@ -627,13 +707,19 @@ export default function AdminMessages() {
               <div className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="text-sm font-medium text-gray-500">หัวข้อ</label>
-                  <h2 className="mt-2 text-2xl font-bold text-gray-900">{selectedMessage.title}</h2>
+                  <label className="text-sm font-medium text-gray-500">
+                    หัวข้อ
+                  </label>
+                  <h2 className="mt-2 text-2xl font-bold text-gray-900">
+                    {selectedMessage.title}
+                  </h2>
                 </div>
 
                 {/* User Info */}
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">ผู้โพสต์</label>
+                  <label className="text-sm font-medium text-gray-500 mb-2 block">
+                    ผู้โพสต์
+                  </label>
                   <div className="mt-2 flex items-center gap-3">
                     {/* Used UserIcon Placeholder */}
                     <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
@@ -643,7 +729,9 @@ export default function AdminMessages() {
                       <p className="font-semibold text-gray-900 text-lg">
                         {selectedMessage.user?.name || "ไม่ระบุชื่อ"}
                       </p>
-                      <p className="text-sm text-gray-600">{selectedMessage.user?.email}</p>
+                      <p className="text-sm text-gray-600">
+                        {selectedMessage.user?.email}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -652,7 +740,9 @@ export default function AdminMessages() {
                 {/* ✅ grid-cols-2 lg:grid-cols-3 นี้ดีอยู่แล้วสำหรับมือถือ */}
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">หมวดหมู่</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      หมวดหมู่
+                    </label>
                     <div className="mt-2">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border bg-blue-100 text-blue-800 border-blue-200">
                         <Tag size={14} />
@@ -662,7 +752,9 @@ export default function AdminMessages() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-500">ความเร่งด่วน</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      ความเร่งด่วน
+                    </label>
                     <div className="mt-2">
                       <span
                         className={`inline-flex px-3 py-1 rounded-full text-sm font-medium border ${
@@ -675,7 +767,9 @@ export default function AdminMessages() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-500">สถานที่</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      สถานที่
+                    </label>
                     <div className="mt-2">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border bg-gray-100 text-gray-800 border-gray-200">
                         <MapPin size={14} />
@@ -687,7 +781,9 @@ export default function AdminMessages() {
 
                 {/* Description */}
                 <div>
-                  <label className="text-sm font-medium text-gray-500">รายละเอียด</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    รายละเอียด
+                  </label>
                   <p className="mt-2 text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-inner">
                     {selectedMessage.description}
                   </p>
@@ -695,7 +791,9 @@ export default function AdminMessages() {
 
                 {/* Stats */}
                 <div className="bg-gray-100 p-4 rounded-xl border border-gray-200">
-                  <label className="text-sm font-medium text-gray-700 mb-3 block">สถิติ</label>
+                  <label className="text-sm font-medium text-gray-700 mb-3 block">
+                    สถิติ
+                  </label>
                   {/* ✅ ปรับจาก grid-cols-3 เป็น grid-cols-1 sm:grid-cols-3 เพื่อให้แสดงผลดีขึ้นในมือถือ */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="flex items-center gap-2">
@@ -704,7 +802,9 @@ export default function AdminMessages() {
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">ยอดวิว</p>
-                        <p className="text-lg font-bold text-gray-900">{selectedMessage.views.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {selectedMessage.views.toLocaleString()}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -714,7 +814,8 @@ export default function AdminMessages() {
                       <div>
                         <p className="text-xs text-gray-500">ความคิดเห็น</p>
                         <p className="text-lg font-bold text-gray-900">
-                          {selectedMessage.comments?.length.toLocaleString() || 0}
+                          {selectedMessage.comments?.length.toLocaleString() ||
+                            0}
                         </p>
                       </div>
                     </div>
@@ -725,7 +826,9 @@ export default function AdminMessages() {
                       <div>
                         <p className="text-xs text-gray-500">วันที่โพสต์</p>
                         <p className="text-sm font-medium text-gray-900">
-                          {new Date(selectedMessage.createdAt).toLocaleDateString("th-TH", {
+                          {new Date(
+                            selectedMessage.createdAt
+                          ).toLocaleDateString("th-TH", {
                             day: "numeric",
                             month: "short",
                             year: "numeric",
@@ -738,25 +841,36 @@ export default function AdminMessages() {
 
                 {/* Created At (Detailed) */}
                 <div>
-                  <label className="text-sm font-medium text-gray-500">วันที่และเวลาโพสต์</label>
+                  <label className="text-sm font-medium text-gray-500">
+                    วันที่และเวลาโพสต์
+                  </label>
                   <p className="mt-2 text-gray-700 text-sm">
-                    {new Date(selectedMessage.createdAt).toLocaleString("th-TH", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(selectedMessage.createdAt).toLocaleString(
+                      "th-TH",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
                   </p>
                 </div>
               </div>
 
               {/* Delete Action */}
               <div className="border-t pt-6">
-                <label className="text-sm font-medium text-gray-700 mb-3 block">การดำเนินการสำหรับผู้ดูแลระบบ</label>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">
+                  การดำเนินการสำหรับผู้ดูแลระบบ
+                </label>
                 <button
                   onClick={() =>
-                    handleDelete(selectedMessage._id, selectedMessage.user?._id || "", selectedMessage.title)
+                    handleDelete(
+                      selectedMessage._id,
+                      selectedMessage.user?._id || "",
+                      selectedMessage.title
+                    )
                   }
                   disabled={deletingMessageId === selectedMessage._id}
                   className={`w-full font-medium py-3 rounded-xl flex justify-center items-center gap-2 transition-all duration-200 shadow-lg ${
@@ -789,12 +903,16 @@ export default function AdminMessages() {
           <div
             key={toast.id}
             className={`px-6 py-4 rounded-xl shadow-xl text-white font-medium min-w-80 transform transition-all duration-300 flex items-center justify-between ${
-              toast.type === "success" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
+              toast.type === "success"
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-red-600 hover:bg-red-700"
             }`}
           >
             <span>{toast.message}</span>
             <button
-              onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+              onClick={() =>
+                setToasts((prev) => prev.filter((t) => t.id !== toast.id))
+              }
               className="ml-4 text-white hover:opacity-80 transition-opacity p-1"
             >
               <X size={18} />

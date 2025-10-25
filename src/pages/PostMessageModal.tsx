@@ -59,7 +59,7 @@ const PostMessageModal: React.FC<PostMessageModalProps> = ({ onClose, onSuccess 
         }
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
             const response = await axios.post(
                 `${API_URL}/api/messages/create`,
                 {

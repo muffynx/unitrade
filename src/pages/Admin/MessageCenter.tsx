@@ -61,7 +61,10 @@ interface Toast {
 }
 
 // Custom Hook (ไม่เปลี่ยนแปลง)
-const useConversationStream = (conversationId: string | null, token: string | null) => {
+const useConversationStream = (
+  conversationId: string | null,
+  token: string | null
+) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -76,8 +79,11 @@ const useConversationStream = (conversationId: string | null, token: string | nu
       eventSourceRef.current.close();
     }
 
-    const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
-    const url = new URL(`${API_URL}/api/conversations/${conversationId}/stream`);
+    const API_URL =
+      import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
+    const url = new URL(
+      `${API_URL}/api/conversations/${conversationId}/stream`
+    );
     url.searchParams.set("token", token);
 
     try {
@@ -153,7 +159,8 @@ const useConversationStream = (conversationId: string | null, token: string | nu
 
 export default function AdminMessageCenter() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -162,13 +169,12 @@ export default function AdminMessageCenter() {
   const [streamToken, setStreamToken] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
   const token = localStorage.getItem("adminToken");
 
-  const { messages, setMessages, addMessage, clearMessages, isConnected } = useConversationStream(
-    selectedConversation?._id || null,
-    streamToken
-  );
+  const { messages, setMessages, addMessage, clearMessages, isConnected } =
+    useConversationStream(selectedConversation?._id || null, streamToken);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -187,16 +193,21 @@ export default function AdminMessageCenter() {
   const fetchConversations = async () => {
     try {
       try {
-        const res = await axios.get(`${API_URL}/api/conversations/admin/conversations`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          `${API_URL}/api/conversations/admin/conversations`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setConversations(res.data);
       } catch (adminErr) {
         console.log("Using fallback endpoint");
         const res = await axios.get(`${API_URL}/api/conversations`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const adminConversations = res.data.filter((conv: Conversation) => conv.isAdminChat);
+        const adminConversations = res.data.filter(
+          (conv: Conversation) => conv.isAdminChat
+        );
         setConversations(adminConversations);
       }
     } catch (err: any) {
@@ -209,14 +220,20 @@ export default function AdminMessageCenter() {
 
   const fetchMessagesAndToken = async (conversationId: string) => {
     try {
-      const messagesRes = await axios.get(`${API_URL}/api/conversations/${conversationId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const messagesRes = await axios.get(
+        `${API_URL}/api/conversations/${conversationId}/messages`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setMessages(messagesRes.data);
       try {
-        const tokenRes = await axios.get(`${API_URL}/api/conversations/${conversationId}/token`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const tokenRes = await axios.get(
+          `${API_URL}/api/conversations/${conversationId}/token`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setStreamToken(tokenRes.data.token);
       } catch (tokenErr) {
         console.log("Token endpoint not available, using basic token");
@@ -276,7 +293,9 @@ export default function AdminMessageCenter() {
       await axios.delete(`${API_URL}/api/conversations/${conversationId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setConversations((prev) => prev.filter((conv) => conv._id !== conversationId));
+      setConversations((prev) =>
+        prev.filter((conv) => conv._id !== conversationId)
+      );
       if (selectedConversation?._id === conversationId) {
         setSelectedConversation(null);
         clearMessages();
@@ -293,9 +312,14 @@ export default function AdminMessageCenter() {
     if (conversation.userInfo) {
       return conversation.userInfo;
     }
-    const user = conversation.participants.find((p) => !p.role || p.role !== "admin");
+    const user = conversation.participants.find(
+      (p) => !p.role || p.role !== "admin"
+    );
     if (!user && conversation.userId) {
-      return conversation.participants.find((p) => p._id === conversation.userId) || null;
+      return (
+        conversation.participants.find((p) => p._id === conversation.userId) ||
+        null
+      );
     }
     return user || conversation.participants[0] || null;
   };
@@ -315,13 +339,19 @@ export default function AdminMessageCenter() {
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (days === 0) {
-      return date.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+      return date.toLocaleTimeString("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     } else if (days === 1) {
       return "เมื่อวาน";
     } else if (days < 7) {
       return `${days} วันที่แล้ว`;
     } else {
-      return date.toLocaleDateString("th-TH", { day: "2-digit", month: "short" });
+      return date.toLocaleDateString("th-TH", {
+        day: "2-digit",
+        month: "short",
+      });
     }
   };
 
@@ -368,18 +398,32 @@ export default function AdminMessageCenter() {
           {/* Header */}
           <div className="p-3 md:p-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-800">ศูนย์ข้อความ</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+                ศูนย์ข้อความ
+              </h1>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handleRefresh}
                   className="p-1.5 md:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   title="รีเฟรช"
                 >
-                  <FaSync className={`${loading ? "animate-spin" : ""} text-sm md:text-base`} />
+                  <FaSync
+                    className={`${
+                      loading ? "animate-spin" : ""
+                    } text-sm md:text-base`}
+                  />
                 </button>
                 <div className="flex items-center space-x-1.5 md:space-x-2 text-xs md:text-sm">
-                  <FaWifi className={`${isConnected ? "text-green-500" : "text-gray-400"} text-xs md:text-sm`} />
-                  <span className={`hidden sm:inline ${isConnected ? "text-green-600" : "text-gray-500"}`}>
+                  <FaWifi
+                    className={`${
+                      isConnected ? "text-green-500" : "text-gray-400"
+                    } text-xs md:text-sm`}
+                  />
+                  <span
+                    className={`hidden sm:inline ${
+                      isConnected ? "text-green-600" : "text-gray-500"
+                    }`}
+                  >
                     {isConnected ? "ออนไลน์" : "ออฟไลน์"}
                   </span>
                 </div>
@@ -409,12 +453,17 @@ export default function AdminMessageCenter() {
               <div className="text-center py-8 text-gray-500 px-4">
                 <FaEnvelope className="mx-auto text-3xl md:text-4xl mb-2 text-gray-300" />
                 <p className="text-sm md:text-base">ไม่มีการสนทนา</p>
-                {searchTerm && <p className="text-xs md:text-sm mt-1">ไม่พบผลลัพธ์สำหรับ "{searchTerm}"</p>}
+                {searchTerm && (
+                  <p className="text-xs md:text-sm mt-1">
+                    ไม่พบผลลัพธ์สำหรับ "{searchTerm}"
+                  </p>
+                )}
               </div>
             ) : (
               filteredConversations.map((conversation) => {
                 const user = getOtherUser(conversation);
-                const isSelected = selectedConversation?._id === conversation._id;
+                const isSelected =
+                  selectedConversation?._id === conversation._id;
 
                 return (
                   <div
@@ -433,7 +482,9 @@ export default function AdminMessageCenter() {
                           <h3 className="font-semibold text-gray-800 truncate text-sm md:text-base">
                             {user?.name || "ไม่ระบุชื่อ"}
                           </h3>
-                          <p className="text-xs md:text-sm text-gray-500 truncate">{user?.email}</p>
+                          <p className="text-xs md:text-sm text-gray-500 truncate">
+                            {user?.email}
+                          </p>
                         </div>
                       </div>
                       <button
@@ -488,7 +539,8 @@ export default function AdminMessageCenter() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h2 className="font-semibold text-gray-800 truncate text-sm md:text-base">
-                        {getOtherUser(selectedConversation)?.name || "ไม่ระบุชื่อ"}
+                        {getOtherUser(selectedConversation)?.name ||
+                          "ไม่ระบุชื่อ"}
                       </h2>
                       <p className="text-xs md:text-sm text-gray-500 truncate">
                         {getOtherUser(selectedConversation)?.email}
@@ -497,9 +549,13 @@ export default function AdminMessageCenter() {
                   </div>
                   <div className="flex items-center space-x-1.5 md:space-x-2 text-xs md:text-sm text-gray-500 flex-shrink-0">
                     <FaCircle
-                      className={`${isConnected ? "text-green-500" : "text-gray-400"} text-[6px] md:text-[8px]`}
+                      className={`${
+                        isConnected ? "text-green-500" : "text-gray-400"
+                      } text-[6px] md:text-[8px]`}
                     />
-                    <span className="hidden sm:inline">{isConnected ? "ออนไลน์" : "กำลังเชื่อมต่อ..."}</span>
+                    <span className="hidden sm:inline">
+                      {isConnected ? "ออนไลน์" : "กำลังเชื่อมต่อ..."}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -520,14 +576,20 @@ export default function AdminMessageCenter() {
                       const isAdmin = message.isAdminMessage;
                       const hasImage =
                         message.attachments &&
-                        message.attachments.some((att) => att.fileType.startsWith("image/"));
-                      const imageAttachment = hasImage ? message.attachments![0] : null;
+                        message.attachments.some((att) =>
+                          att.fileType.startsWith("image/")
+                        );
+                      const imageAttachment = hasImage
+                        ? message.attachments![0]
+                        : null;
 
                       if (hasImage && imageAttachment) {
                         return (
                           <div
                             key={message._id}
-                            className={`flex ${isAdmin ? "justify-end" : "justify-start"} mb-3`}
+                            className={`flex ${
+                              isAdmin ? "justify-end" : "justify-start"
+                            } mb-3`}
                           >
                             <div className="max-w-[85%] sm:max-w-xs lg:max-w-md">
                               <div className="relative">
@@ -535,7 +597,9 @@ export default function AdminMessageCenter() {
                                   src={imageAttachment.url}
                                   alt="Attached image"
                                   className="max-w-full h-auto rounded-xl cursor-pointer hover:opacity-95 transition-opacity shadow-sm"
-                                  onClick={() => window.open(imageAttachment.url, "_blank")}
+                                  onClick={() =>
+                                    window.open(imageAttachment.url, "_blank")
+                                  }
                                 />
                               </div>
 
@@ -557,7 +621,9 @@ export default function AdminMessageCenter() {
 
                               <div
                                 className={`text-[10px] md:text-xs mt-1 px-1 ${
-                                  isAdmin ? "text-blue-600 text-right" : "text-gray-500"
+                                  isAdmin
+                                    ? "text-blue-600 text-right"
+                                    : "text-gray-500"
                                 }`}
                               >
                                 {formatMessageTime(message.createdAt)}
@@ -569,7 +635,9 @@ export default function AdminMessageCenter() {
                       return (
                         <div
                           key={message._id}
-                          className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
+                          className={`flex ${
+                            isAdmin ? "justify-end" : "justify-start"
+                          }`}
                         >
                           <div
                             className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-2xl ${
@@ -629,7 +697,9 @@ export default function AdminMessageCenter() {
                     ) : (
                       <FaPaperPlane size={12} className="md:w-3.5 md:h-3.5" />
                     )}
-                    <span className="text-xs md:text-sm">{sending ? "กำลังส่ง..." : "ส่ง"}</span>
+                    <span className="text-xs md:text-sm">
+                      {sending ? "กำลังส่ง..." : "ส่ง"}
+                    </span>
                   </button>
                 </div>
                 {!isConnected && (
@@ -645,7 +715,9 @@ export default function AdminMessageCenter() {
             <div className="flex-1 flex flex-col items-center justify-center bg-white p-4">
               <div className="text-center max-w-md">
                 <FaEnvelope className="mx-auto text-4xl md:text-6xl text-gray-300 mb-4" />
-                <h3 className="text-lg md:text-xl font-semibold text-gray-600 mb-2">เลือกการสนทนา</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-gray-600 mb-2">
+                  เลือกการสนทนา
+                </h3>
                 <p className="text-sm md:text-base text-gray-500">
                   เลือกการสนทนาจากรายการด้านข้างเพื่อเริ่มการสนทนากับผู้ใช้
                 </p>
@@ -675,7 +747,9 @@ export default function AdminMessageCenter() {
             <div className="flex items-center justify-between">
               <span className="text-sm md:text-base">{toast.message}</span>
               <button
-                onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+                onClick={() =>
+                  setToasts((prev) => prev.filter((t) => t.id !== toast.id))
+                }
                 className="ml-3 md:ml-4 text-white hover:text-gray-200 text-lg md:text-xl flex-shrink-0"
               >
                 ×

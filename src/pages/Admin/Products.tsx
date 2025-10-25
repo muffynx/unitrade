@@ -84,7 +84,8 @@ export default function AdminProducts() {
   const [conditionFilter, setConditionFilter] =
     useState<ConditionFilter>("all");
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
   const token = localStorage.getItem("adminToken");
 
   const handleUserImageError = (

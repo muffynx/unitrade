@@ -112,7 +112,7 @@ const Messages = () => {
         try {
             setLoading(true);
             setError(null);
-            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+            const API_URL = import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
             const response = await axios.get(`${API_URL}/api/messages`);
 
             const msgs = response.data.map((msg: any) => ({

@@ -93,7 +93,7 @@ const Header = () => {
       const fetchFavoritesCount = async () => {
         try {
           const API_URL =
-            import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+            import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
           const response = await axios.get(`${API_URL}/api/favorites`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -110,7 +110,7 @@ const Header = () => {
         setLoadingNotifs(true);
         try {
           const API_URL =
-            import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+            import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
           const headers = { Authorization: `Bearer ${token}` };
           const items: NotificationItem[] = [];
           const unreadConvIds: string[] = [];
@@ -324,7 +324,7 @@ const Header = () => {
       if (!token || unreadChatConvs.length === 0) return;
 
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
 
       // Chunking requests to avoid hitting limits
       for (let i = 0; i < unreadChatConvs.length; i += 20) {
@@ -365,7 +365,7 @@ const Header = () => {
     const token = localStorage.getItem("token");
     if (token) {
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
       const headers = { Authorization: `Bearer ${token}` };
 
       if (n.type === "chat" && n.meta?.conversationId) {

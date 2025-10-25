@@ -66,7 +66,8 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
 
   const token = localStorage.getItem("adminToken");
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+  const API_URL =
+    import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -79,7 +80,7 @@ export default function Dashboard() {
 
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      
+
       // ดึงข้อมูลทั้งหมดพร้อมกัน
       const [usersRes, reportsRes, productsRes] = await Promise.all([
         axios.get(`${API_URL}/api/admin/users`, { headers }),
@@ -92,7 +93,10 @@ export default function Dashboard() {
       setProducts(productsRes.data);
     } catch (err: any) {
       console.error(err);
-      setError("ไม่สามารถโหลดข้อมูล Dashboard ได้: " + (err.response?.data?.message || err.message));
+      setError(
+        "ไม่สามารถโหลดข้อมูล Dashboard ได้: " +
+          (err.response?.data?.message || err.message)
+      );
     } finally {
       setLoading(false);
     }
@@ -123,11 +127,17 @@ export default function Dashboard() {
   // รายการล่าสุด (สำหรับแสดงผล)
   const recentOpenReports = reports
     .filter((r) => r.status === "open")
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
     .slice(0, 5);
 
   const recentUsers = users
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
     .slice(0, 5);
 
   const formatTimeAgo = (dateString: string) => {
@@ -229,10 +239,17 @@ export default function Dashboard() {
               <div className="divide-y divide-gray-100">
                 {recentOpenReports.length > 0 ? (
                   recentOpenReports.map((report) => (
-                    <div key={report._id} className="p-4 flex justify-between items-start">
+                    <div
+                      key={report._id}
+                      className="p-4 flex justify-between items-start"
+                    >
                       <div>
-                        <p className="font-medium text-gray-800 line-clamp-1">{report.type}</p>
-                        <p className="text-sm text-gray-500 line-clamp-1">{report.message}</p>
+                        <p className="font-medium text-gray-800 line-clamp-1">
+                          {report.type}
+                        </p>
+                        <p className="text-sm text-gray-500 line-clamp-1">
+                          {report.message}
+                        </p>
                       </div>
                       <span className="text-sm text-gray-400 flex-shrink-0 ml-4">
                         {formatTimeAgo(report.createdAt)}
@@ -240,7 +257,9 @@ export default function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <p className="p-4 text-gray-500">ยอดเยี่ยม! ไม่มีรายงานที่รอจัดการ</p>
+                  <p className="p-4 text-gray-500">
+                    ยอดเยี่ยม! ไม่มีรายงานที่รอจัดการ
+                  </p>
                 )}
               </div>
             </div>
@@ -253,7 +272,10 @@ export default function Dashboard() {
               <div className="divide-y divide-gray-100">
                 {recentUsers.length > 0 ? (
                   recentUsers.map((user) => (
-                    <div key={user._id} className="p-4 flex justify-between items-start">
+                    <div
+                      key={user._id}
+                      className="p-4 flex justify-between items-start"
+                    >
                       <div>
                         <p className="font-medium text-gray-800">{user.name}</p>
                         <p className="text-sm text-gray-500">{user.email}</p>

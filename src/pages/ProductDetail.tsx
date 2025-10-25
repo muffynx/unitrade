@@ -183,7 +183,7 @@ function Gallery({ product }: { product: Product }) {
         const token = localStorage.getItem("token");
         if (!token) return;
         const API_URL =
-          import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+          import.meta.env.VITE_API_URL || "https://unitrade4.onrender.com";
         const response = await axios.get(`${API_URL}/api/favorites`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -206,7 +206,7 @@ function Gallery({ product }: { product: Product }) {
     setLoadingBookmark(true);
     try {
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        import.meta.env.VITE_API_URL || "https://unitrade5.onrender.com";
       if (isBookmarked) {
         await axios.delete(`${API_URL}/api/favorites/${product._id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -536,7 +536,7 @@ function SellerPanel({ product }: { product: Product }) {
     const fetchUserReviews = async () => {
       try {
         const API_URL =
-          import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+          import.meta.env.VITE_API_URL || "https://unitrade4.onrender.com";
         const response = await axios.get(
           `${API_URL}/api/reviews/user/${product.user._id}`
         );
@@ -607,7 +607,7 @@ function SellerPanel({ product }: { product: Product }) {
       }
 
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        import.meta.env.VITE_API_URL || "https://unitrade4.onrender.com";
       const userResponse = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -658,7 +658,7 @@ function SellerPanel({ product }: { product: Product }) {
     try {
       const token = localStorage.getItem("token");
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        import.meta.env.VITE_API_URL || "https://unitrade4.onrender.com";
 
       await axios.post(
         `${API_URL}/api/reports`,
@@ -966,7 +966,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
     const fetchRelatedProducts = async () => {
       try {
         const API_URL =
-          import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+          import.meta.env.VITE_API_URL || "https://unitrade4.onrender.com";
         const response = await axios.get(`${API_URL}/api/product`, {
           params: {
             category: currentProduct.category,
@@ -1048,7 +1048,7 @@ function RelatedList({ currentProduct }: { currentProduct: Product }) {
       }
 
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+        import.meta.env.VITE_API_URL || "https://unitrade4.onrender.com";
 
       const conversationResponse = await axios.post(
         `${API_URL}/api/conversations/product/${product._id}`,
