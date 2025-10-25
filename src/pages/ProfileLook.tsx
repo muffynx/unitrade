@@ -111,7 +111,7 @@ useEffect(() => {
       return;
     }
 
-    try {
+try {
       setLoading(true);
       setError(null);
 
@@ -126,12 +126,26 @@ useEffect(() => {
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       const reviewRes = await axios.get(`${API_URL}/api/reviews/user/${id}`, config);
 
-      // ตรวจสอบว่าเป็น array หรือ object เดียว
-      let reviewsData = [];
-      if (Array.isArray(reviewRes.data.reviews)) {
+      // --- START: แก้ไขส่วนนี้ ---
+      let reviewsData: Review[] = [];
+      let averageRating = 0;
+      let reviewCount = 0;
+
+      // กรณีที่ API ส่ง Array มาตรงๆ (ตามตัวอย่าง JSON ที่ให้มา)
+      if (Array.isArray(reviewRes.data)) {
+        reviewsData = reviewRes.data;
+      // กรณีที่ API ส่ง Object ที่มี key 'reviews' (ตามที่ code เดิมพยายามทำ)
+      } else if (reviewRes.data && Array.isArray(reviewRes.data.reviews)) {
         reviewsData = reviewRes.data.reviews;
+        averageRating = reviewRes.data.averageRating;
+        reviewCount = reviewRes.data.reviewCount;
+      // กรณีที่ API ส่ง object มาหนึ่งอัน (ตามที่ code เดิมพยายามทำ)
       } else if (reviewRes.data.reviews) {
-        reviewsData = [reviewRes.data.reviews]; // แปลง object เป็น array
+         // This block handles the case where 'reviews' is a single object, 
+         // which is unlikely for a list endpoint but kept for safety based on the original code
+         reviewsData = [reviewRes.data.reviews]; 
+         averageRating = reviewRes.data.averageRating;
+         reviewCount = reviewRes.data.reviewCount;
       }
 
       setReviews(reviewsData);
@@ -141,8 +155,8 @@ useEffect(() => {
         prev
           ? {
               ...prev,
-              averageRating: reviewRes.data.averageRating || prev.averageRating,
-              reviewCount: reviewRes.data.reviewCount || prev.reviewCount,
+ averageRating: averageRating || reviewRes.data.averageRating || prev.averageRating,
+              reviewCount: reviewCount || reviewRes.data.reviewCount || prev.reviewCount,
             }
           : prev
       );
