@@ -680,7 +680,7 @@ const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).
             </div>
           ) : (
 <div className="space-y-4">
-  {reviews && reviews.length > 0 ? (
+  {Array.isArray(reviews) && reviews.length > 0 ? (
     getSortedReviews().map((review) => (
       <div
         key={review._id}
@@ -689,7 +689,7 @@ const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).
         <div className="flex items-start gap-3">
           {/* Reviewer Image */}
           <div className="flex-shrink-0">
-            {review.reviewerId.profileImage ? (
+            {review?.reviewerId?.profileImage ? (
               <img
                 src={review.reviewerId.profileImage}
                 alt={review.reviewerId.name}
@@ -706,7 +706,7 @@ const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).
           <div className="flex-1">
             <div className="flex items-center justify-between">
               {/* Reviewer Name */}
-              <p className="font-medium text-sm">{review.reviewerId.name}</p>
+              <p className="font-medium text-sm">{review?.reviewerId?.name || "ไม่ระบุชื่อ"}</p>
               
               {/* Star Rating */}
               <div className="flex">
@@ -715,7 +715,7 @@ const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).
                     key={star}
                     size={16}
                     className={`${
-                      star <= review.rating
+                      star <= (review.rating || 0)
                         ? 'text-yellow-400 fill-current'
                         : 'text-gray-300'
                     }`}
@@ -725,16 +725,19 @@ const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).
             </div>
 
             {/* Review Date */}
-            <p className="text-xs text-gray-500 mt-1">{formatTime(review.createdAt)}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {review.createdAt ? formatTime(review.createdAt) : ""}
+            </p>
 
             {/* Comment Box */}
             <p className="text-sm text-gray-700 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 break-words">
-              {review.comment || "ไม่มีความคิดเห็น"}
+              {review.comment?.trim() || "ไม่มีความคิดเห็น"}
             </p>
 
             {/* Product Name */}
             <p className="text-xs text-gray-500 mt-2">
-              สินค้า: <span className="font-medium">{review.productId.title}</span>
+              สินค้า:{" "}
+              <span className="font-medium">{review?.productId?.title || "ไม่ระบุสินค้า"}</span>
             </p>
           </div>
         </div>
@@ -748,6 +751,7 @@ const getSortedReviews = () => [...reviews].sort((a,b) => new Date(b.createdAt).
     </div>
   )}
 </div>
+
 
 
 
