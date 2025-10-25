@@ -355,7 +355,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
       const response = await axios.get(`${API_URL}/api/product?userId=current`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -369,7 +369,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
       const favoritesResponse = await axios.get(`${API_URL}/api/favorites`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -390,7 +390,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
       const response = await axios.get(`${API_URL}/api/reviews/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -409,7 +409,7 @@ export default function Dashboard() {
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
         const userResponse = await axios.get(`${API_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -443,7 +443,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
       await axios.delete(`${API_URL}/api/product/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -458,7 +458,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade3.onrender.com';
       await axios.delete(`${API_URL}/api/favorites/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
