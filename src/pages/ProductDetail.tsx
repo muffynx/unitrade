@@ -1195,7 +1195,7 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         const API_URL =
-          import.meta.env.VITE_API_URL || "https://unitrade3.onrender.com";
+          import.meta.env.VITE_API_URL || "https://unitrade4.onrender.com";
 
         // 1. ดึงข้อมูลสินค้า
         const response = await axios.get(`${API_URL}/api/products/${id}`);
